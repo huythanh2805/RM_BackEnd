@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 import dotenv from "dotenv";
 import cors from "cors";
 import categoryRoute from "./routes/category.route.js";
+import dishRoute from "./routes/dish.route.js";
 // .env
 dotenv.config();
 const port = process.env.PORT || 3333;
@@ -15,6 +16,8 @@ app.use(express.json());
 
 // category route
 app.use(categoryRoute);
+// dish route
+app.use(dishRoute);
 
 // connect to db
 mongoose
