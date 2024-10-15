@@ -1,24 +1,29 @@
+import cors from "cors";
+import dotenv from "dotenv";
 import express from "express";
-import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-import cors from 'cors';
+import mongoose from "mongoose";
+import userRoutes from "./routes/user.route.js";
 // .env
 dotenv.config();
 const port = process.env.PORT || 3333;
 // App
 const app = express();
 
-// middlle ware 
+// middlle ware
 app.use(cors());
+// app.use(auth);
+app.use(express.json());
+app.use("/users", userRoutes);
+
 // connect to db
-mongoose.connect(process.env.DB_URL)
-.then(() => console.log('Connected to MongoDB succcesfully!'))
-.catch(err => console.error('Could not connect to MongoDB...', err));
+mongoose
+  .connect(process.env.DB_URL)
+  .then(() => console.log("Connected to MongoDB succcesfully!"))
+  .catch((err) => console.error("Could not connect to MongoDB...", err));
 
-
-app.get('/', (req, res) => {
-    res.send('This is my server using port 1111')
+app.get("/", (req, res) => {
+  res.send("This is my server using port 1111");
 });
 app.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+  console.log(`Server is running on port ${port}`);
 });
