@@ -2,11 +2,9 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import mongoose from "mongoose";
-import userRoutes from "./routes/user.route.js";
-import dotenv from "dotenv";
-import cors from "cors";
 import categoryRoute from "./routes/category.route.js";
 import dishRoute from "./routes/dish.route.js";
+import userRoutes from "./routes/user.route.js";
 // .env
 dotenv.config();
 const port = process.env.PORT || 3333;
