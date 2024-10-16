@@ -18,7 +18,7 @@ const UserSchame = new mongoose.Schema(
       type: String,
     },
     phoneNumber: {
-      type: Number,
+      type: String,
       required: true,
     },
     address: {
@@ -34,6 +34,8 @@ const UserSchame = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    resetPasswordToken: { type: String }, // Thêm trường này
+    resetPasswordExpires: { type: Date }, // Thêm trường này
   },
   {
     timestamps: true,
