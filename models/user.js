@@ -19,7 +19,7 @@ const UserSchame = new mongoose.Schema(
     },
     phoneNumber: {
       type: String,
-      required: true,
+      required: false,
     },
     address: {
       type: String,
@@ -34,6 +34,7 @@ const UserSchame = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    provider: { type: String, required: false },
     resetPasswordToken: { type: String }, // Thêm trường này
     resetPasswordExpires: { type: Date }, // Thêm trường này
   },

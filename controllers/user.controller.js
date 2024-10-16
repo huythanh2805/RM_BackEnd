@@ -1,10 +1,56 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import { OAuth2Client } from "google-auth-library";
 import jwt from "jsonwebtoken";
 import transporter from "../configs/transporter.js";
 import User from "../models/user.js";
-
+const client = new OAuth2Client("1034244549008-5hm8ddao395soh8ebcgpcj3q1tl9q83f.apps.googleusercontent.com");
 class UserController {
+  async googleLogin(req, res) {
+    const { token } = req.body;
+
+    try {
+      console.log("Received token:", token);
+      // Xác thực token Google
+      const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: "1034244549008-5hm8ddao395soh8ebcgpcj3q1tl9q83f.apps.googleusercontent.com",
+      });
+      const payload = ticket.getPayload();
+      const { email, name, picture } = payload;
+
+      // Kiểm tra xem người dùng đã tồn tại chưa
+      let user = await User.findOne({ email });
+
+      if (!user) {
+        // Nếu chưa tồn tại, tạo mới người dùng
+        user = new User({
+          email,
+          userName: name,
+          image: picture, // Hoặc lưu URL ảnh đại diện Google
+          provider: "google", // Để đánh dấu rằng người dùng này đăng nhập qua Google
+        });
+        await user.save();
+      }
+
+      // Tạo JWT cho người dùng
+      const jwtToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+
+      // Gửi phản hồi về phía client
+      res.status(200).json({
+        message: "Login successful",
+        token: jwtToken, // Gửi token đã tạo cho client
+        user: {
+          email: user.email,
+          userName: user.userName,
+          avatar: user.avatar,
+        },
+      });
+    } catch (error) {
+      console.error("Error during Google login:", error);
+      res.status(400).json({ message: "Invalid Google token" });
+    }
+  }
   //Client
   // Register method
   async register(req, res) {

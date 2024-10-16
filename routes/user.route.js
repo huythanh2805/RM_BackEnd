@@ -4,7 +4,7 @@ import { auth } from "../middlewares/auth.js";
 import upload from "../middlewares/upload.js";
 
 const router = express.Router();
-
+router.post("/google-login", UserController.googleLogin);
 router.post("/register", UserController.register);
 router.post("/login", UserController.login);
 router.get("/admin/list", auth, UserController.getListUsers);
