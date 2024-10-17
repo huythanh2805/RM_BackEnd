@@ -140,6 +140,65 @@ class UserController {
       return res.status(500).json({ message: "Lỗi cập nhật thông tin người dùng", error });
     }
   }
+  // Hàm gửi email đặt lại mật khẩu
+  async requestPasswordReset(req, res) {
+    console.log("Received request body:", req.body);
+    const { email } = req.body;
+    // Kiểm tra xem email có tồn tại không
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "Email không tồn tại trong hệ thống." });
+    }
+    // Tạo token đặt lại mật khẩu
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const tokenExpiry = Date.now() + 3600000; // Token có hiệu lực trong 1 giờ
+    // Lưu token và thời hạn vào user
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = tokenExpiry;
+    await user.save();
+    // Tạo liên kết đặt lại mật khẩu
+    const resetUrl = `http://localhost:4444/reset-password/${resetToken}`;
+    console.log("Reset URL:", resetUrl);
+    // Cấu hình nội dung email
+    const mailOptions = {
+      from: "thiuyen1132004@gmail.com", // Địa chỉ email gửi
+      to: user.email, // Địa chỉ email nhận
+      subject: "Đặt lại mật khẩu",
+      text: `Bạn đã yêu cầu đặt lại mật khẩu. Vui lòng nhấp vào liên kết sau để đặt lại mật khẩu của bạn: ${resetUrl}`,
+      html: `<p>Bạn đã yêu cầu đặt lại mật khẩu.</p>
+             <p>Vui lòng nhấp vào liên kết sau để đặt lại mật khẩu của bạn:</p>
+             <a href="${resetUrl}">${resetUrl}</a>`,
+    };
+    // Gửi email
+    transporter.sendMail(mailOptions, (error) => {
+      if (error) {
+        console.error("Error sending email:", error);
+        return res.status(500).json({ message: "Không thể gửi email. Vui lòng thử lại sau." });
+      }
+      return res.status(200).json({ message: "Liên kết đặt lại mật khẩu đã được gửi đến email của bạn." });
+    });
+  }
+  // Hàm thực hiện việc đặt lại mật khẩu
+  async resetPassword(req, res) {
+    const { token, newPassword } = req.body;
+    console.log(token);
+    console.log(newPassword);
+    // Tìm user theo token
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() }, // Kiểm tra xem token còn hiệu lực không
+    });
+    if (!user) {
+      return res.status(400).json({ message: "Token không hợp lệ hoặc đã hết hạn." });
+    }
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    // Cập nhật mật khẩu mới
+    user.password = hashedPassword;
+    user.resetPasswordToken = undefined; // Xóa token cũ
+    user.resetPasswordExpires = undefined; // Xóa thời gian hết hạn
+    await user.save();
+    return res.status(200).json({ message: "Mật khẩu đã được đặt lại thành công." });
+  }
   // Admin
   //list user accounts
   async getListUsers(req, res) {
@@ -238,65 +297,6 @@ class UserController {
     } catch (error) {
       return res.status(500).json({ message: "Lỗi xóa người dùng", error });
     }
-  }
-  // Hàm gửi email đặt lại mật khẩu
-  async requestPasswordReset(req, res) {
-    console.log("Received request body:", req.body);
-    const { email } = req.body;
-    // Kiểm tra xem email có tồn tại không
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "Email không tồn tại trong hệ thống." });
-    }
-    // Tạo token đặt lại mật khẩu
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    const tokenExpiry = Date.now() + 3600000; // Token có hiệu lực trong 1 giờ
-    // Lưu token và thời hạn vào user
-    user.resetPasswordToken = resetToken;
-    user.resetPasswordExpires = tokenExpiry;
-    await user.save();
-    // Tạo liên kết đặt lại mật khẩu
-    const resetUrl = `http://localhost:4444/reset-password/${resetToken}`;
-    console.log("Reset URL:", resetUrl);
-    // Cấu hình nội dung email
-    const mailOptions = {
-      from: "thiuyen1132004@gmail.com", // Địa chỉ email gửi
-      to: user.email, // Địa chỉ email nhận
-      subject: "Đặt lại mật khẩu",
-      text: `Bạn đã yêu cầu đặt lại mật khẩu. Vui lòng nhấp vào liên kết sau để đặt lại mật khẩu của bạn: ${resetUrl}`,
-      html: `<p>Bạn đã yêu cầu đặt lại mật khẩu.</p>
-             <p>Vui lòng nhấp vào liên kết sau để đặt lại mật khẩu của bạn:</p>
-             <a href="${resetUrl}">${resetUrl}</a>`,
-    };
-    // Gửi email
-    transporter.sendMail(mailOptions, (error) => {
-      if (error) {
-        console.error("Error sending email:", error);
-        return res.status(500).json({ message: "Không thể gửi email. Vui lòng thử lại sau." });
-      }
-      return res.status(200).json({ message: "Liên kết đặt lại mật khẩu đã được gửi đến email của bạn." });
-    });
-  }
-  // Hàm thực hiện việc đặt lại mật khẩu
-  async resetPassword(req, res) {
-    const { token, newPassword } = req.body;
-    console.log(token);
-    console.log(newPassword);
-    // Tìm user theo token
-    const user = await User.findOne({
-      resetPasswordToken: token,
-      resetPasswordExpires: { $gt: Date.now() }, // Kiểm tra xem token còn hiệu lực không
-    });
-    if (!user) {
-      return res.status(400).json({ message: "Token không hợp lệ hoặc đã hết hạn." });
-    }
-    const hashedPassword = await bcrypt.hash(newPassword, 12);
-    // Cập nhật mật khẩu mới
-    user.password = hashedPassword;
-    user.resetPasswordToken = undefined; // Xóa token cũ
-    user.resetPasswordExpires = undefined; // Xóa thời gian hết hạn
-    await user.save();
-    return res.status(200).json({ message: "Mật khẩu đã được đặt lại thành công." });
   }
 }
 
