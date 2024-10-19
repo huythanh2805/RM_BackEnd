@@ -6,6 +6,7 @@ import transporter from "../configs/transporter.js";
 import User from "../models/user.js";
 const client = new OAuth2Client("1034244549008-5hm8ddao395soh8ebcgpcj3q1tl9q83f.apps.googleusercontent.com");
 class UserController {
+  //Login google
   async googleLogin(req, res) {
     const { token } = req.body;
 
@@ -27,7 +28,7 @@ class UserController {
         user = new User({
           email,
           userName: name,
-          image: picture, // Hoặc lưu URL ảnh đại diện Google
+          image: picture,
           provider: "google", // Để đánh dấu rằng người dùng này đăng nhập qua Google
         });
         await user.save();
@@ -101,6 +102,7 @@ class UserController {
   async getUserProfile(req, res) {
     try {
       const user = await User.findById(req.user.id);
+
       if (!user) {
         return res.status(404).json({ message: "Người dùng không tồn tại" });
       }
@@ -111,35 +113,29 @@ class UserController {
   }
   // Update user profile
   async updateUserProfile(req, res) {
-    const { userName, phoneNumber, address, password } = req.body;
+    const { userName, phoneNumber, address } = req.body;
     let image;
-    // Kiểm tra xem có hình ảnh mới không
     if (req.file) {
-      image = req.file.path;
+      image = `http://localhost:1111/upload/${req.file.filename}`;
     }
     try {
-      const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
-      const user = await User.findByIdAndUpdate(
-        req.user.id,
-        {
-          userName,
-          phoneNumber,
-          address,
-          ...(hashedPassword && { password: hashedPassword }), // Cập nhật mật khẩu nếu có
-          ...(image && { image }), // Cập nhật hình ảnh nếu có
-        },
-        { new: true }
-      );
-
+      const updateData = {
+        userName,
+        phoneNumber,
+        address,
+      };
+      if (image) updateData.image = image;
+      const user = await User.findByIdAndUpdate(req.user.id, updateData, { new: true });
       if (!user) {
         return res.status(404).json({ message: "Người dùng không tồn tại" });
       }
-
+      user.image = image;
       return res.status(200).json({ user });
     } catch (error) {
-      return res.status(500).json({ message: "Lỗi cập nhật thông tin người dùng", error });
+      return res.status(500).json({ message: "Lỗi cập nhật thông tin người dùng", error: error.message });
     }
   }
+
   // Hàm gửi email đặt lại mật khẩu
   async requestPasswordReset(req, res) {
     console.log("Received request body:", req.body);
