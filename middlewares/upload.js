@@ -1,18 +1,13 @@
 import multer from "multer";
 import path from "path";
-import { fileURLToPath } from "url";
 
-// Định nghĩa lại __dirname
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+// Cấu hình multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, path.join(__dirname, "../upload/")); // Đường dẫn tuyệt đối tới thư mục lưu trữ
+    cb(null, "upload/"); // Thư mục lưu tệp
   },
   filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
-    cb(null, file.fieldname + "-" + uniqueSuffix + path.extname(file.originalname));
+    cb(null, Date.now() + path.extname(file.originalname)); // Đổi tên tệp
   },
 });
 
