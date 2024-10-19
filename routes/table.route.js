@@ -3,12 +3,12 @@ import TableController from "../controllers/table.controller.js";
 
 const router = express.Router();
 
-const dishController = new DishController();
+const tableController = new TableController();
 
-router.get("/tables", TableController.getAlltables);
-router.post("/tables", TableController.addNewTable);
-router.put("/tables", TableController.updateOrderTable);
-router.put("/tables/:id", TableController.updateTableInformation);
-router.delete("/tables/:id", TableController.deleteTable);
+router.get("/tables", tableController.getAlltables);
+router.post("/tables", tableController.addNewTable);
+router.put("/tables", tableController.updateOrderTable);
+router.put("/tables/:id", tableController.updateTableInformation);
+router.delete("/tables/:id", tableController.deleteTable);
 
 export default router;
