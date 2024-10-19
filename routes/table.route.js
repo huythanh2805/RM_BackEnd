@@ -8,7 +8,7 @@ const tableController = new TableController();
 router.get("/tables", tableController.getAlltables);
 router.post("/tables", tableController.addNewTable);
 router.put("/tables", tableController.updateOrderTable);
-router.put("/tables/:id", tableController.updateTableInformation);
+router.patch("/tables/:id", tableController.updateTableInformation);
 router.delete("/tables/:id", tableController.deleteTable);
 
 export default router;

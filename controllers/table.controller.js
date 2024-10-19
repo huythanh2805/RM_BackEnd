@@ -1,5 +1,6 @@
 import Table from "../models/table.js"
 class TableController {
+  // Get all tables
   async getAlltables(req, res) {
     try {
       const tables = await Table.find({}).sort({ order: 1 })
@@ -17,7 +18,7 @@ class TableController {
         .json({ message: "Something went wrong with get all Table" })
     }
   }
-
+// Add new table
   addNewTable = async (req, res) => {
     try {
       const { location_id, order } = req.body
@@ -37,12 +38,15 @@ class TableController {
       return res.status(501).json({ message: "Internal Server Error" })
     }
   }
+
+  // Update order table
   async updateFornewTable(item, index) {
     await Table.findByIdAndUpdate(
       { _id: item._id },
       { order: index, location_id: item.location_id }
     )
   }
+  
   updateOrderTable = async (req, res) => {
     const { newArray } = req.body
     const tableArray = newArray
@@ -60,9 +64,9 @@ class TableController {
       console.log(error)
     }
   }
-
+// update information tables
   async updateTableInformation(req, res) {
-    const { id } = req.params.id
+    const { id } = req.params
     const { number_of_seats, name } = req.body
     if (!id) return res.status(401).json({ message: "There's no id" })
     if (!number_of_seats || !name)
@@ -81,9 +85,9 @@ class TableController {
       return res.status(501).json({ message: "Internal Server Error!" })
     }
   }
-
+// delete tables
   async deleteTable(req, res) {
-    const { id } = req.params.id
+    const { id } = req.params
     if (!id)
       return res
         .status(401)

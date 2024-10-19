@@ -6,7 +6,7 @@ import categoryRoute from "./routes/category.route.js";
 import dishRoute from "./routes/dish.route.js";
 import userRoutes from "./routes/user.route.js";
 import tableRoute from "./routes/table.route.js";
-import LocationRoute from "./routes/location.route.js";
+import locationRoute from "./routes/location.route.js";
 // .env
 dotenv.config();
 const port = process.env.PORT || 3333;
@@ -23,9 +23,9 @@ app.use(categoryRoute);
 // dish route
 app.use(dishRoute);
 // table route
-app.use(tableRoute);
+app.use("/api/reservations", tableRoute);
 // table location
-app.use(LocationRoute);
+app.use("/api/reservations", locationRoute);
 
 // connect to db
 mongoose

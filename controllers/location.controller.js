@@ -41,7 +41,6 @@ class LocationController {
 
   updateLocationOrder = async (req, res) => {
     const { newArray } = req.body
-    await connectToDB()
     const LocationArray = newArray
     if (!newArray)
       return res.status(401).json(
@@ -49,7 +48,8 @@ class LocationController {
       )
     try {
       LocationArray.forEach((item, index) => {
-        updateForNewLocation(item, index)
+        this.updateForNewLocation(item, index)
+        
       })
       return res.status(201).json({ message: "Successfully" })
     } catch (error) {
@@ -59,8 +59,9 @@ class LocationController {
 
   // update information
   async updateLocationInformation(req, res) {
-    const { id } = req.params.id
+    const { id } = req.params
     const { locationInRestaurant } = req.body
+    console.log({locationInRestaurant, id})
     if (!id) return res.status(401).json({ message: "There's no id" })
     if (!locationInRestaurant)
       return res
@@ -82,7 +83,7 @@ class LocationController {
   }
   // Delete location
   async deleteLocation(req, res) {
-    const { id } = req.params.id
+    const { id } = req.params
     if (!id)
       return res
         .status(401)
