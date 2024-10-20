@@ -6,6 +6,7 @@ const router = express.Router();
 const tableController = new TableController();
 
 router.get("/tables", tableController.getAlltables);
+router.get("/tables/:id", tableController.getDetailTable);
 router.post("/tables", tableController.addNewTable);
 router.put("/tables", tableController.updateOrderTable);
 router.patch("/tables/:id", tableController.updateTableInformation);

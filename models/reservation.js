@@ -34,7 +34,7 @@ const reservationSchame = new mongoose.Schema(
       enum: ["ISWAITING","ISCOMFIRMED", "SEATED", "COMPLETED", "CANCELED"],
       default: "ISWAITING",
     },
-    reservation_time: {
+    startTime: {
         type: Date,
     },
     isOrderedOnline: {

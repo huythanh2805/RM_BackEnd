@@ -7,6 +7,8 @@ import dishRoute from "./routes/dish.route.js";
 import userRoutes from "./routes/user.route.js";
 import tableRoute from "./routes/table.route.js";
 import locationRoute from "./routes/location.route.js";
+import reservationRoute from "./routes/Reservation.route.js";
+import orderedFoodRoute from "./routes/orderedFood.route.js";
 // .env
 dotenv.config();
 const port = process.env.PORT || 3333;
@@ -15,8 +17,8 @@ const app = express();
 
 // middlle ware
 app.use(cors());
-// app.use(auth);
 app.use(express.json());
+// app.use(auth);
 app.use("/users", userRoutes);
 // category route
 app.use(categoryRoute);
@@ -24,8 +26,12 @@ app.use(categoryRoute);
 app.use(dishRoute);
 // table route
 app.use("/api/reservations", tableRoute);
-// table location
+// location route
 app.use("/api/reservations", locationRoute);
+// reservation route
+app.use("/api", reservationRoute);
+// orderedFood route
+app.use("/api", orderedFoodRoute);
 
 // connect to db
 mongoose
