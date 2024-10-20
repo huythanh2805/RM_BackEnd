@@ -1,4 +1,5 @@
 import OrderedDish from "../models/orderedDish.js"
+import Reservation from "../models/reservation.js"
 class OrderedFoodController {
   // Get all
   getAllOrderedFood = async (req, res) => {
@@ -25,6 +26,11 @@ class OrderedFoodController {
         reservation_id,
         dish_id,
       })
+      
+       await Reservation.findByIdAndUpdate(
+        reservation_id,
+        { $push: { ordered_dishes : orderedFood._doc._id } }, // Dùng toán tử $push để thêm vào mảng
+    );
       // retrun newest orderedFood with address populate
       const newestOrderedFood = await OrderedDish.findById(
         orderedFood._id

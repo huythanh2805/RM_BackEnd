@@ -9,6 +9,7 @@ import tableRoute from "./routes/table.route.js";
 import locationRoute from "./routes/location.route.js";
 import reservationRoute from "./routes/Reservation.route.js";
 import orderedFoodRoute from "./routes/orderedFood.route.js";
+import billRoute from "./routes/bill.route.js";
 // .env
 dotenv.config();
 const port = process.env.PORT || 3333;
@@ -32,6 +33,8 @@ app.use("/api/reservations", locationRoute);
 app.use("/api", reservationRoute);
 // orderedFood route
 app.use("/api", orderedFoodRoute);
+// bill route
+app.use("/api", billRoute);
 
 // connect to db
 mongoose

@@ -7,13 +7,16 @@ const billSchame = new mongoose.Schema(
       ref: "reservation",
       required: true
     },
-    total_money: {
-      type: Number,
-      required: true,
+    billDetail_id: {
+      type: mongoose.Schema.ObjectId,
+      ref: "billDetail",
     },
     original_money: {
       type: Number,
       required: true
+    },
+    discounted_money: {
+      type: Number,
     },
     status: {
       type: String,

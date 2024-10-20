@@ -10,7 +10,13 @@ const reservationSchame = new mongoose.Schema(
       type: mongoose.Schema.ObjectId,
       ref: "user",
     },
+    userName: {
+        type: String
+    },
     phoneNumber: {
+        type: String
+    },
+    detailAddress: {
         type: String
     },
     guests_count: {

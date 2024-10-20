@@ -10,7 +10,7 @@ const setComboProductSchame = new mongoose.Schema({
     combo_id: {
             type: mongoose.SchemaTypes.ObjectId,
             ref: 'setCombo',
-        },
+    },
 
 }, 
 {
