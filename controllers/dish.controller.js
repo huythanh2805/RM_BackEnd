@@ -12,9 +12,7 @@ class DishController {
         });
       }
 
-      return res.status(200).json({
-        data: dishes,
-      });
+      return res.status(200).json(dishes);
     } catch (error) {
       return res.status(500).json({
         message: "Get all dishes failed",
@@ -33,9 +31,7 @@ class DishController {
         });
       }
 
-      return res.status(200).json({
-        data: dish,
-      });
+      return res.status(200).json(dish);
     } catch (error) {
       return res.status(500).json({
         message: "Get dish detail failed",
@@ -69,9 +65,7 @@ class DishController {
 
       await newDish.save();
 
-      return res.status(201).json({
-        data: newDish,
-      });
+      return res.status(201).json(newDish);
     } catch (error) {
       return res
         .status(500)
@@ -111,9 +105,7 @@ class DishController {
         });
       }
 
-      return res.status(200).json({
-        data: updatedDish,
-      });
+      return res.status(200).json(updatedDish);
     } catch (error) {
       return res.status(500).json({
         message: "Update dish failed",
