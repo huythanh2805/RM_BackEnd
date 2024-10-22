@@ -1,3 +1,4 @@
+import { sendEmailConfirmedStatus } from "../configs/transporter.js"
 import Reservation from "../models/reservation.js"
 import Table from "../models/table.js"
 
@@ -20,7 +21,6 @@ class ReservationController {
       )
     }
   }
-  
   // Get detail reservation by id
   getDetail = async (reservation_id)=>{
     const reservation = await Reservation.findById(reservation_id)
@@ -211,7 +211,37 @@ class ReservationController {
       )
     }
   }
-  // update reservation
+  // Select table 
+  selectTable = async(
+    req, res
+  )=> {
+    const {reservation_id, table_id} = req.body
+    if (!reservation_id)
+      return res.status(401).json(
+        { message: "There is no Id to update reservation" },
+      )
+  
+    try {
+        const reservation = await Reservation.findById(reservation_id)
+        // Check if reser startTime larger than now
+        if(new Date(reservation.startTime) < new Date()) return res.status(401).json({message: "It's not reach out the startTime yet"})
+        await Table.findByIdAndUpdate(table_id, { $set: { status: "ISSERVING" } })
+        //  update reservation table_id
+        await Reservation.findByIdAndUpdate(
+          { _id: reservation_id },
+          { table_id: table_id },
+          { status: "SEATED" },
+        )
+  
+      return res.status(201).json({ message: "Successfully!" })
+    } catch (error) {
+      console.log("Inventories_Error", error)
+      return res.status(500).json(
+        { message: "Internal Server Error" },
+      )
+    }
+  }
+  // update reservation reusable for update status and informations which don't have status
   updateReservation = async(
     req, res
   )=> {
@@ -222,19 +252,20 @@ class ReservationController {
       payment_method,
       detailAddress,
       phoneNumber,
+      status,
     } = req.body
     const {reservation_id} = req.params
     try {
-      if (
-        !userName ||
-        !guests_count ||
-        !payment_method ||
-        !detailAddress ||
-        !phoneNumber
-      )
-        return res.status(401).json({ message: "All data are required" })
-      // 4: update reservation
-      const newReservation = await Reservation.findByIdAndUpdate(reservation_id,{
+      const reservation = await Reservation.findById(reservation_id).populate('user_id')
+      if(status){
+          await Reservation.findByIdAndUpdate(reservation_id,{
+            status
+          })
+          if(status === "ISCOMFIRMED") sendEmailConfirmedStatus(reservation.user_id.email, "Bạn đã đặt lịch thành công vui lòng đến đúng thời gian")
+          return res.status(201).json({ message: "Succussfully!"})
+      }
+     
+      await Reservation.findByIdAndUpdate(reservation_id,{
         userName,
         guests_count,
         payment_method,

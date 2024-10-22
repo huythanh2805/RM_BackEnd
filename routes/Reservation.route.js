@@ -11,7 +11,8 @@ router.get("/reservations", reservationController.getAllReser);
 router.get("/reservations/:reservation_id", reservationController.getReserDetailById);
 router.post("/reservations", reservationController.createReservation);
 router.put("/reservations/:reservation_id", reservationController.updateReservation);
-router.patch("/reservations", reservationController.reselectTable);
 router.delete("/reservations", reservationController.deleteReservationByIdArray);
+router.patch("/reservations/reselect", reservationController.reselectTable);
+router.patch("/reservations/select", reservationController.selectTable);
 
 export default router;
