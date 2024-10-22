@@ -11,9 +11,7 @@ class CategoryController {
         });
       }
 
-      return res.status(200).json({
-        data: categories,
-      });
+      return res.status(200).json(categories);
     } catch (error) {
       return res.status(500).json({
         message: "Get all categories failed",
@@ -32,9 +30,7 @@ class CategoryController {
         });
       }
 
-      return res.status(200).json({
-        data: category,
-      });
+      return res.status(200).json(category);
     } catch (error) {
       return res.status(500).json({
         message: "Get detail category failed",
@@ -47,9 +43,7 @@ class CategoryController {
     try {
       const category = await Category.create(req.body);
 
-      return res.status(201).json({
-        data: category,
-      });
+      return res.status(201).json(category);
     } catch (error) {
       return res.status(500).json({
         message: "Create category failed",
@@ -74,9 +68,7 @@ class CategoryController {
         });
       }
 
-      return res.status(200).json({
-        data: category,
-      });
+      return res.status(200).json(category);
     } catch (error) {
       return res.status(500).json({
         message: "Update category failed",
