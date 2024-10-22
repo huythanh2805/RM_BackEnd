@@ -18,6 +18,24 @@ class TableController {
         .json({ message: "Something went wrong with get all Table" })
     }
   }
+  // Get detail table
+  async getDetailTable(req, res) {
+    const { id } = req.params
+  if (!id)
+    return res.status(401).json(
+      { message: "There is no Id to get detail table" },
+    )
+  try {
+    const newTable = (await Table.findById(id)) 
+    if(!newTable) res.status(401).json({ message: "Can't get table by id" })
+    return res.status(201).json({ table: newTable })
+  } catch (error) {
+    console.log("Inventories_Error", error)
+    return res.status(500).json(
+      { message: "Internal Server Error" },
+    )
+  }
+  }
 // Add new table
   addNewTable = async (req, res) => {
     try {
@@ -57,7 +75,7 @@ class TableController {
 
     try {
       tableArray.forEach((item, index) => {
-        updateFornewTable(item, index)
+        this.updateFornewTable(item, index)
       })
       return res.status(201).json({ message: "Successfully" })
     } catch (error) {

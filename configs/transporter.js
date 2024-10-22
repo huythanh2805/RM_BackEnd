@@ -9,4 +9,15 @@ const Transporter = nodemailer.createTransport({
   },
 });
 
+export const sendEmailConfirmedStatus = (email, text)=>{
+  const mailOptions = {
+    from: "thiuyen1132004@gmail.com", // Địa chỉ email gửi
+    to: email, // Địa chỉ email nhận
+    subject: "Thông báo từ nhà hàng Goldren Fork",
+    text: text,
+  };
+  // Gửi email
+  return Transporter.sendMail(mailOptions);
+}
+
 export default Transporter;

@@ -10,7 +10,13 @@ const reservationSchame = new mongoose.Schema(
       type: mongoose.Schema.ObjectId,
       ref: "user",
     },
+    userName: {
+        type: String
+    },
     phoneNumber: {
+        type: String
+    },
+    detailAddress: {
         type: String
     },
     guests_count: {
@@ -34,12 +40,17 @@ const reservationSchame = new mongoose.Schema(
       enum: ["ISWAITING","ISCOMFIRMED", "SEATED", "COMPLETED", "CANCELED"],
       default: "ISWAITING",
     },
-    reservation_time: {
+    startTime: {
         type: Date,
     },
     isOrderedOnline: {
       type: Boolean,
       default: false
+    },
+    payment_method: {
+      type: String,
+      enum: ["CASHPAYMENT","BANKPAYMENT"],
+      default: "CASHPAYMENT",
     }
   },
   {

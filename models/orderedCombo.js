@@ -14,6 +14,11 @@ const OrderedComboSchame = new mongoose.Schema({
         default: 1,
         required: true
     },
+    status: {
+        type: String,
+        enum: ["ISPREPARED", "ISCOMPLETED", "ISCANCELED"],
+        default: "ISPREPARED",
+      }
 }, 
 {
     timestamps: true

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const orderedDishSchame = new mongoose.Schema({
-    dishes_id: {
+    dish_id: {
         type: mongoose.Schema.ObjectId,
         ref: 'dish'
     },
@@ -14,6 +14,11 @@ const orderedDishSchame = new mongoose.Schema({
         default: 1,
         required: true
     },
+    status: {
+      type: String,
+      enum: ["ISPREPARED", "ISCOMPLETED", "ISCANCELED"],
+      default: "ISPREPARED",
+    }
 }, 
 {
     timestamps: true
