@@ -46,6 +46,11 @@ const reservationSchame = new mongoose.Schema(
     isOrderedOnline: {
       type: Boolean,
       default: false
+    },
+    payment_method: {
+      type: String,
+      enum: ["CASHPAYMENT","BANKPAYMENT"],
+      default: "CASHPAYMENT",
     }
   },
   {

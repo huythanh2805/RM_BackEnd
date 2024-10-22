@@ -35,12 +35,13 @@ class ReservationController {
     })
     return reservation
    }
-  getReservationById = async (req, res) => {
+  getReserDetailById = async (req, res) => {
     try {
       const { reservation_id } = req.params
 
       // Tìm reservation theo ID và populate các trường liên quan
-         const reservation = getDetail(reservation_id)
+         const reservation = await this.getDetail(reservation_id)
+
 
       // Kiểm tra nếu reservation không tồn tại
       if (!reservation) {
@@ -55,7 +56,7 @@ class ReservationController {
     }
   }
   // Get detail reservation by table status
-  getReserDetail = async (req, res) => {
+  getReserDetailByTableId = async (req, res) => {
     const { table_id } = req.params
     if (!table_id) return res.status(201).json({ message: "Missing table id" })
     try {
@@ -93,7 +94,7 @@ class ReservationController {
     const {
       table_id,
       userName,
-      party_size,
+      guests_count,
       payment_method,
       startTime,
       detailAddress,
@@ -103,7 +104,7 @@ class ReservationController {
     try {
       if (
         !userName ||
-        !party_size ||
+        !guests_count ||
         !payment_method ||
         !detailAddress ||
         !phoneNumber
@@ -112,7 +113,7 @@ class ReservationController {
       // 4: create reservation
       const newReservation = await Reservation.create({
         userName,
-        party_size,
+        guests_count,
         payment_method,
         table_id,
         detailAddress,
@@ -176,6 +177,77 @@ class ReservationController {
       });
     }
   };
-
+  // Reselect table 
+  reselectTable = async(
+    req, res
+  )=> {
+    const {reservation_id, table_id} = req.body
+    console.log({reservation_id, table_id})
+    if (!reservation_id)
+      return res.status(401).json(
+        { message: "There is no Id to update reservation" },
+      )
+  
+    try {
+      const oldReservation = await Reservation.findById( reservation_id )
+    
+        await Table.updateOne(
+          { _id: oldReservation.table_id },
+          { $set: { status: "AVAILABLE" } }
+        );
+  
+        await Table.findByIdAndUpdate(table_id, { $set: { status: "ISSERVING" } })
+        //  update reservation table_id
+        await Reservation.findByIdAndUpdate(
+          { _id: reservation_id },
+          { table_id: table_id },
+        )
+  
+      return res.status(201).json({ message: "Successfully!" })
+    } catch (error) {
+      console.log("Inventories_Error", error)
+      return res.status(500).json(
+        { message: "Internal Server Error" },
+      )
+    }
+  }
+  // update reservation
+  updateReservation = async(
+    req, res
+  )=> {
+    const {
+      table_id,
+      userName,
+      guests_count,
+      payment_method,
+      detailAddress,
+      phoneNumber,
+    } = req.body
+    const {reservation_id} = req.params
+    try {
+      if (
+        !userName ||
+        !guests_count ||
+        !payment_method ||
+        !detailAddress ||
+        !phoneNumber
+      )
+        return res.status(401).json({ message: "All data are required" })
+      // 4: update reservation
+      const newReservation = await Reservation.findByIdAndUpdate(reservation_id,{
+        userName,
+        guests_count,
+        payment_method,
+        table_id,
+        detailAddress,
+        phoneNumber,
+      })
+      return res
+        .status(201)
+        .json({ message: "Succussfully!"})
+    } catch (error) {
+      console.log("Inventories_Error", error)
+      return res.status(500).json({ message: "Internal Server Error" })
+    } }
 }
 export default ReservationController
