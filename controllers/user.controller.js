@@ -1,7 +1,9 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
+import fs from "fs";
 import { OAuth2Client } from "google-auth-library";
 import jwt from "jsonwebtoken";
+import cloudinary from "../configs/cloudinary.js";
 import transporter from "../configs/transporter.js";
 import User from "../models/user.js";
 const client = new OAuth2Client("1034244549008-5hm8ddao395soh8ebcgpcj3q1tl9q83f.apps.googleusercontent.com");
@@ -35,7 +37,7 @@ class UserController {
       }
 
       // Tạo JWT cho người dùng
-      const jwtToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" });
+      const jwtToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
       // Gửi phản hồi về phía client
       res.status(200).json({
@@ -91,7 +93,7 @@ class UserController {
         return res.status(400).json({ message: "Mật khẩu không đúng" });
       }
       const token = jwt.sign({ id: user._id, email: user.email, role: user.role }, process.env.JWT_SECRET, {
-        expiresIn: "1h",
+        expiresIn: "7d",
       });
       return res.status(200).json({ result: user, token });
     } catch (error) {
@@ -116,7 +118,11 @@ class UserController {
     const { userName, phoneNumber, address } = req.body;
     let image;
     if (req.file) {
-      image = `http://localhost:1111/upload/${req.file.filename}`;
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "Users",
+      });
+      image = result.secure_url;
+      fs.unlinkSync(req.file.path);
     }
     try {
       const updateData = {
@@ -209,6 +215,7 @@ class UserController {
   // add user
   async addUser(req, res) {
     const { email, password, userName, phoneNumber } = req.body;
+    let image;
     if (!email || !password || !userName || !phoneNumber) {
       return res.status(400).json({ message: "Tất cả các trường là bắt buộc." });
     }
@@ -217,6 +224,13 @@ class UserController {
       if (existingUser) {
         return res.status(400).json({ message: "Người dùng đã tồn tại." });
       }
+      if (req.file) {
+        const result = await cloudinary.uploader.upload(req.file.path, {
+          folder: "user_images",
+        });
+        image = result.secure_url;
+        fs.unlinkSync(req.file.path);
+      }
       const hashedPassword = await bcrypt.hash(password, 10);
       const newUser = new User({
         email,
@@ -224,6 +238,7 @@ class UserController {
         userName,
         phoneNumber,
         role: "ADMIN",
+        image,
       });
       await newUser.save();
       return res.status(201).json({ message: "Người dùng đã được tạo thành công." });
@@ -251,7 +266,11 @@ class UserController {
     let image;
     // Kiểm tra xem có hình ảnh mới không
     if (req.file) {
-      image = req.file.path;
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "Users",
+      });
+      image = result.secure_url;
+      fs.unlinkSync(req.file.path);
     }
 
     try {
