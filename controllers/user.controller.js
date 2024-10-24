@@ -82,9 +82,8 @@ class UserController {
   // Login method
   async login(req, res) {
     const { email, password } = req.body;
-
     try {
-      const user = await User.findOne({ email });
+      const user = await User.findOne({ email, isdelete: 0 });
       if (!user) {
         return res.status(400).json({ message: "Tài khoản không tồn tại" });
       }
@@ -205,7 +204,7 @@ class UserController {
   //list user accounts
   async getListUsers(req, res) {
     try {
-      const users = await User.find({});
+      const users = await User.find({ isdelete: 0 });
       return res.status(200).json({ users });
     } catch (error) {
       console.error("Lỗi lấy danh sách người dùng:", error);
@@ -254,7 +253,7 @@ class UserController {
   }
   // Get user profile by ID
   async getUserById(req, res) {
-    const { id } = req.params; // Lấy ID từ tham số URL
+    const { id } = req.params;
     try {
       const user = await User.findById(id);
       if (!user) {
@@ -269,7 +268,6 @@ class UserController {
   async updateUserById(req, res) {
     const { userName, phoneNumber, address, password, role } = req.body;
     let image;
-    // Kiểm tra xem có hình ảnh mới không
     if (req.file) {
       const result = await cloudinary.uploader.upload(req.file.path, {
         folder: "Users",
@@ -277,7 +275,6 @@ class UserController {
       image = result.secure_url;
       fs.unlinkSync(req.file.path);
     }
-
     try {
       const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
       const user = await User.findByIdAndUpdate(
@@ -286,9 +283,9 @@ class UserController {
           userName,
           phoneNumber,
           address,
-          ...(hashedPassword && { password: hashedPassword }), // Cập nhật mật khẩu nếu có
-          ...(image && { image }), // Cập nhật hình ảnh nếu có
-          ...(role && { role }), // Cập nhật vai trò nếu có
+          ...(hashedPassword && { password: hashedPassword }),
+          ...(image && { image }),
+          ...(role && { role }),
         },
         { new: true }
       );
@@ -309,12 +306,9 @@ class UserController {
       return res.status(400).json({ message: "ID người dùng không hợp lệ" });
     }
     try {
-      // Cập nhật trường `isDelete` thành 1 thay vì xóa người dùng
-      const user = await User.findByIdAndUpdate(
-        id,
-        { isDelete: 1 },
-        { new: true } // Tùy chọn `new: true` để trả về document sau khi được cập nhật
-      );
+      console.log("User ID:", id);
+      const user = await User.findByIdAndUpdate(id, { isdelete: 1 }, { new: true });
+      console.log("Updated User:", user);
 
       if (!user) {
         return res.status(404).json({ message: "Người dùng không tồn tại" });

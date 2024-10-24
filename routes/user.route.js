@@ -19,6 +19,6 @@ router.get("/admin/list", auth, UserController.getListUsers);
 router.post("/admin/add", auth, upload.single("image"), UserController.addUser);
 router.get("/admin/edit/:id", auth, UserController.getUserById);
 router.put("/admin/edit/:id", auth, upload.single("image"), UserController.updateUserById);
-router.delete("/admin/delete/:id", auth, UserController.deleteUser);
+router.put("/admin/delete/:id", auth, UserController.deleteUser);
 
 export default router;
