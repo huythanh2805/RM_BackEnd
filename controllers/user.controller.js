@@ -214,12 +214,12 @@ class UserController {
   }
   // add user
   async addUser(req, res) {
-    const { email, password, userName, phoneNumber } = req.body;
+    const { email, password, userName, phoneNumber, address } = req.body;
     console.log(req.body);
     let image;
-    // if (!email || !password || !userName || !phoneNumber) {
-    //   return res.status(400).json({ message: "Tất cả các trường là bắt buộc." });
-    // }
+    if (!email || !password || !userName || !phoneNumber) {
+      return res.status(400).json({ message: "Tất cả các trường là bắt buộc." });
+    }
 
     try {
       const existingUser = await User.findOne({ email });
@@ -243,6 +243,7 @@ class UserController {
         phoneNumber,
         role: "ADMIN",
         image,
+        address,
       });
       await newUser.save();
       return res.status(201).json({ message: "Người dùng đã được tạo thành công." });
