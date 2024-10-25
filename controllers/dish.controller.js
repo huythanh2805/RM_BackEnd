@@ -4,7 +4,7 @@ import cloudinary from "../configs/cloudinary.js";
 class DishController {
   async getAllDishes(req, res) {
     try {
-      const dishes = await Dish.find({});
+      const dishes = await Dish.find({}).populate("category_id", "name _id");
 
       if (!dishes || dishes.length === 0) {
         return res.status(404).json({
@@ -23,7 +23,10 @@ class DishController {
 
   async getDishDetail(req, res) {
     try {
-      const dish = await Dish.findById(req.params.id);
+      const dish = await Dish.findById(req.params.id).populate(
+        "category_id",
+        "name _id"
+      );
 
       if (!dish) {
         return res.status(404).json({
