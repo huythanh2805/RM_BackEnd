@@ -10,7 +10,7 @@ router.post("/google-login", UserController.googleLogin);
 router.post("/register", UserController.register);
 router.post("/login", UserController.login);
 router.get("/edit", auth, UserController.getUserProfile);
-router.put("/edit", auth, upload.single("image"), UserController.updateUserProfile);
+router.put("/update", auth, upload.single("image"), UserController.updateUserProfile);
 router.post("/forgot-password", UserController.requestPasswordReset);
 router.post("/reset-password", UserController.resetPassword);
 
