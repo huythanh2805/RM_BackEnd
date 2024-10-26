@@ -43,72 +43,90 @@ class DishController {
     }
   }
 
+  // async createDish(req, res) {
+  //   try {
+  //     // Kiểm tra nếu có file được upload
+  //     if (!req.files || req.files.length === 0) {
+  //       return res.status(400).json({ message: "No image files provided" });
+  //     }
+
+  //     // Upload từng file lên Cloudinary và lưu URL vào mảng
+  //     const uploadPromises = req.files.map((file) =>
+  //       cloudinary.uploader.upload(file.path, {
+  //         folder: "RM",
+  //       })
+  //     );
+
+  //     const results = await Promise.all(uploadPromises);
+  //     const imageUrls = results.map((result) => result.secure_url); // Lấy URL
+
+  //     // Tạo món ăn mới
+  //     const newDish = new Dish({
+  //       ...req.body,
+  //       images: imageUrls, // Lưu mảng URL ảnh từ Cloudinary vào cơ sở dữ liệu
+  //     });
+
+  //     await newDish.save();
+
+  //     return res.status(201).json(newDish);
+  //   } catch (error) {
+  //     return res
+  //       .status(500)
+  //       .json({ message: "Create dish failed", error: error.message });
+  //   }
+  // }
+
   async createDish(req, res) {
     try {
-      // Kiểm tra nếu có file được upload
-      if (!req.files || req.files.length === 0) {
-        return res.status(400).json({ message: "No image files provided" });
+      const existingProduct = await Dish.findOne({ name: req.body.name });
+      if (existingProduct) {
+        return res.status(400).json({
+          message: "The product name already exists",
+        });
       }
 
-      // Upload từng file lên Cloudinary và lưu URL vào mảng
-      const uploadPromises = req.files.map((file) =>
-        cloudinary.uploader.upload(file.path, {
-          folder: "RM",
-        })
-      );
+      const images = req.files
+        ? req.files.map((file) => file.path)
+        : req.body.images;
 
-      const results = await Promise.all(uploadPromises);
-      const imageUrls = results.map((result) => result.secure_url); // Lấy URL
-
-      // Tạo món ăn mới
-      const newDish = new Dish({
+      const dish = await Dish.create({
         ...req.body,
-        images: imageUrls, // Lưu mảng URL ảnh từ Cloudinary vào cơ sở dữ liệu
+        images,
       });
 
-      await newDish.save();
-
-      return res.status(201).json(newDish);
+      return res.status(201).json(dish);
     } catch (error) {
-      return res
-        .status(500)
-        .json({ message: "Create dish failed", error: error.message });
+      return res.status(500).json({
+        message: "Create dish failed",
+        error: error.message,
+      });
     }
   }
 
   async updateDish(req, res) {
     try {
-      // Kiểm tra nếu có file được upload
-      let imageUrls = [];
-      if (req.files && req.files.length > 0) {
-        // Upload từng file lên Cloudinary và lưu URL vào mảng
-        const uploadPromises = req.files.map((file) =>
-          cloudinary.uploader.upload(file.path, {
-            folder: "RM",
-          })
-        );
-
-        const results = await Promise.all(uploadPromises);
-        imageUrls = results.map((result) => result.secure_url); // Lấy URL
-      }
-
-      // Cập nhật món ăn
-      const updatedDish = await Dish.findByIdAndUpdate(
-        req.params.id,
-        {
-          ...req.body,
-          ...(imageUrls.length > 0 && { images: imageUrls }), // Chỉ cập nhật trường images nếu có ảnh mới
-        },
-        { new: true }
-      );
-
-      if (!updatedDish) {
-        return res.status(404).json({
-          message: "Dish not found",
+      const existingProduct = await Dish.findOne({ name: req.body.name });
+      if (existingProduct) {
+        return res.status(400).json({
+          message: "The product name already exists",
         });
       }
 
-      return res.status(200).json(updatedDish);
+      const images = req.files
+        ? req.files.map((file) => file.path)
+        : req.body.images;
+
+      // Tạo object chứa thông tin cần cập nhật
+      const updateData = {
+        ...req.body,
+        images,
+      };
+
+      const dish = await Dish.findByIdAndUpdate(req.params.id, updateData, {
+        new: true,
+      });
+
+      return res.status(200).json(dish);
     } catch (error) {
       return res.status(500).json({
         message: "Update dish failed",
