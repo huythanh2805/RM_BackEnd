@@ -1,6 +1,5 @@
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
-import fs from "fs";
 import { OAuth2Client } from "google-auth-library";
 import jwt from "jsonwebtoken";
 import cloudinary from "../configs/cloudinary.js";
@@ -117,27 +116,40 @@ class UserController {
     const { userName, phoneNumber, address } = req.body;
     let image;
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "Users",
-      });
-      image = result.secure_url;
-      fs.unlinkSync(req.file.path);
+      try {
+        image = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream({ folder: "Users" }, (error, result) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result.secure_url);
+            }
+          });
+          uploadStream.end(req.file.buffer);
+        });
+      } catch (error) {
+        return res.status(500).json({
+          message: "Lỗi tải lên Cloudinary",
+          error: error.message,
+        });
+      }
     }
+
     try {
-      const updateData = {
-        userName,
-        phoneNumber,
-        address,
-      };
+      const updateData = { userName, phoneNumber, address };
       if (image) updateData.image = image;
       const user = await User.findByIdAndUpdate(req.user.id, updateData, { new: true });
       if (!user) {
-        return res.status(404).json({ message: "Người dùng không tồn tại" });
+        return res.status(404).json({
+          message: "Người dùng không tồn tại",
+        });
       }
-      user.image = image;
       return res.status(200).json({ user });
     } catch (error) {
-      return res.status(500).json({ message: "Lỗi cập nhật thông tin người dùng", error: error.message });
+      return res.status(500).json({
+        message: "Lỗi cập nhật thông tin người dùng",
+        error: error.message,
+      });
     }
   }
 
@@ -219,31 +231,42 @@ class UserController {
     if (!email || !password || !userName || !phoneNumber) {
       return res.status(400).json({ message: "Tất cả các trường là bắt buộc." });
     }
-
     try {
       const existingUser = await User.findOne({ email });
       if (existingUser) {
         return res.status(400).json({ message: "Người dùng đã tồn tại." });
       }
+
       if (req.file) {
-        const result = await cloudinary.uploader.upload(req.file.path, {
-          folder: "user_images",
+        // Sử dụng Promise để tải lên hình ảnh lên Cloudinary
+        image = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream({ folder: "Users" }, (error, result) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result.secure_url);
+            }
+          });
+          uploadStream.end(req.file.buffer);
         });
-        image = result.secure_url;
-        fs.unlinkSync(req.file.path);
       }
+
       console.log("Before hashing password");
       const hashedPassword = await bcrypt.hash(password, 10);
       console.log("Hashed Password:", hashedPassword);
+
+      // Tạo người dùng mới với tất cả các trường đã nhập
       const newUser = new User({
         email,
         password: hashedPassword,
         userName,
         phoneNumber,
         role: "ADMIN",
-        image,
+        image, // Lưu URL của hình ảnh nếu có
         address,
       });
+
+      // Lưu người dùng mới vào cơ sở dữ liệu
       await newUser.save();
       return res.status(201).json({ message: "Người dùng đã được tạo thành công." });
     } catch (error) {
@@ -269,11 +292,23 @@ class UserController {
     const { userName, phoneNumber, address, password, role } = req.body;
     let image;
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "Users",
-      });
-      image = result.secure_url;
-      fs.unlinkSync(req.file.path);
+      try {
+        image = await new Promise((resolve, reject) => {
+          const uploadStream = cloudinary.uploader.upload_stream({ folder: "Users" }, (error, result) => {
+            if (error) {
+              reject(error);
+            } else {
+              resolve(result.secure_url);
+            }
+          });
+          uploadStream.end(req.file.buffer);
+        });
+      } catch (error) {
+        return res.status(500).json({
+          message: "Lỗi tải lên Cloudinary",
+          error: error.message,
+        });
+      }
     }
     try {
       const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined;
@@ -289,11 +324,9 @@ class UserController {
         },
         { new: true }
       );
-
       if (!user) {
         return res.status(404).json({ message: "Người dùng không tồn tại" });
       }
-
       return res.status(200).json({ user });
     } catch (error) {
       return res.status(500).json({ message: "Lỗi cập nhật thông tin người dùng", error });
