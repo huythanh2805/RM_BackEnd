@@ -44,4 +44,4 @@ const UserSchame = new mongoose.Schema(
   }
 );
 
-export default mongoose.models?.user || mongoose.model("User", UserSchame);
+export default mongoose.models?.user || mongoose.model("user", UserSchame);

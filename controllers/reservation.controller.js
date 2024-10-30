@@ -1,4 +1,5 @@
 import { sendEmailConfirmedStatus } from "../configs/transporter.js"
+import OrderedDish from "../models/orderedDish.js"
 import Reservation from "../models/reservation.js"
 import Table from "../models/table.js"
 
@@ -75,12 +76,14 @@ class ReservationController {
           .exec()
         return res.status(201).json({ reservationDetail })
       } else if (tableDetail.status === "ISSERVING") {
+        console.log('ISSERVING')
         reservationDetail = await Reservation.findOne({
           table_id: table_id,
           status: "SEATED",
         })
           .populate("user_id")
           .populate("table_id")
+          console.log(reservationDetail)
         return res.status(201).json({ reservationDetail })
       }
       console.log({ reservationDetail })
@@ -90,7 +93,7 @@ class ReservationController {
     }
   }
   // add new reservation admin
-  createReservation = async (req, res) => {
+  createAdminReservation = async (req, res) => {
     const {
       table_id,
       userName,
@@ -132,6 +135,50 @@ class ReservationController {
       return res
         .status(201)
         .json({ message: "Succussfully!", reservation: newReservation })
+    } catch (error) {
+      console.log("Inventories_Error", error)
+      return res.status(500).json({ message: "Internal Server Error" })
+    }
+  }
+  // add new reservation client
+  createClientReservation = async (req, res) => {
+    
+    const {
+      startTime,
+       dishs,
+       user_id,
+       guests_count,
+       phoneNumber,
+       userName,
+    } = req.body
+    console.log(req.body)
+    try {
+      if (!req.body)
+        return res.status(401).json({ message: "All data are required" })
+      // 4: create reservation
+      const newReservation = await Reservation.create({
+        user_id,
+        userName,
+        guests_count,
+        startTime,
+        status: "ISWAITING",
+        phoneNumber,
+      })
+      // 5: if create reservation successfully, create ordered dish
+        if (!newReservation) return res.status(401).json({ message: "Can't Create new order" })
+          
+      const orderedDishes = dishs.map(dish => ({
+        dish_id: dish.dish_id,
+        reservation_id: newReservation._doc._id,
+        quantity: dish.quantity,
+        status: "ISPREPARED"
+      }));
+      // Sử dụng phương thức insertMany để lưu tất cả cùng lúc
+      const insertedOrderedDish = await OrderedDish.insertMany(orderedDishes);
+
+      if (!insertedOrderedDish) return res.status(401).json({ message: "Can't Create new ordered dish" })
+
+      return res.status(201).json({ message: "Succussfully!"})
     } catch (error) {
       console.log("Inventories_Error", error)
       return res.status(500).json({ message: "Internal Server Error" })
@@ -224,14 +271,15 @@ class ReservationController {
     try {
         const reservation = await Reservation.findById(reservation_id)
         // Check if reser startTime larger than now
-        if(new Date(reservation.startTime) < new Date()) return res.status(401).json({message: "It's not reach out the startTime yet"})
+        if(new Date(reservation.startTime).getTime() < new Date().getTime()) return res.status(401).json({message: "It's not reach out the startTime yet"})
         await Table.findByIdAndUpdate(table_id, { $set: { status: "ISSERVING" } })
         //  update reservation table_id
         await Reservation.findByIdAndUpdate(
-          { _id: reservation_id },
-          { table_id: table_id },
-          { status: "SEATED" },
-        )
+           reservation_id,
+           { table_id: table_id ,
+             status: "SEATED" 
+           },
+        ) 
   
       return res.status(201).json({ message: "Successfully!" })
     } catch (error) {
@@ -261,7 +309,8 @@ class ReservationController {
           await Reservation.findByIdAndUpdate(reservation_id,{
             status
           })
-          if(status === "ISCOMFIRMED") sendEmailConfirmedStatus(reservation.user_id.email, "Bạn đã đặt lịch thành công vui lòng đến đúng thời gian")
+          if(status === "ISCOMFIRMED") sendEmailConfirmedStatus(reservation.user_id.email, "Bạn đã đặt lịch thành công vui lòng đến đúng thời gian 🎉🎉")
+          if(status === "CANCELED") sendEmailConfirmedStatus(reservation.user_id.email, "Đơn đặt bàn của bạn không được chấp nhận 😛😛")
           return res.status(201).json({ message: "Succussfully!"})
       }
      
