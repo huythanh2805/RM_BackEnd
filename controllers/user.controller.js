@@ -34,9 +34,9 @@ class UserController {
         });
         await user.save();
       }
-
+      console.log(user);
       // Tạo JWT cho người dùng
-      const jwtToken = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
+      const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
 
       // Gửi phản hồi về phía client
       res.status(200).json({
