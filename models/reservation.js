@@ -1,4 +1,4 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
 const reservationSchame = new mongoose.Schema(
   {
@@ -11,18 +11,18 @@ const reservationSchame = new mongoose.Schema(
       ref: "user",
     },
     userName: {
-        type: String
+      type: String,
     },
     phoneNumber: {
-        type: String
+      type: String,
     },
     detailAddress: {
-        type: String
+      type: String,
     },
     guests_count: {
-        type: Number,
-        default: 1,
-      },
+      type: Number,
+      default: 1,
+    },
     ordered_dishes: [
       {
         type: mongoose.Schema.ObjectId,
@@ -37,25 +37,25 @@ const reservationSchame = new mongoose.Schema(
     ],
     status: {
       type: String,
-      enum: ["ISWAITING","ISCOMFIRMED", "SEATED", "COMPLETED", "CANCELED"],
+      enum: ["ISWAITING", "ISCOMFIRMED", "SEATED", "COMPLETED", "CANCELED"],
       default: "ISWAITING",
     },
     startTime: {
-        type: Date,
+      type: Date,
     },
     isOrderedOnline: {
       type: Boolean,
-      default: false
+      default: false,
     },
     payment_method: {
       type: String,
-      enum: ["CASHPAYMENT","BANKPAYMENT"],
+      enum: ["CASHPAYMENT", "BANKPAYMENT"],
       default: "CASHPAYMENT",
-    }
+    },
   },
   {
     timestamps: true,
   }
-)
+);
 
-export default mongoose.models.reservation || mongoose.model("reservation", reservationSchame)
+export default mongoose.models.reservation || mongoose.model("reservation", reservationSchame);
