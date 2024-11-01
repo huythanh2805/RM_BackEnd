@@ -43,7 +43,6 @@ class ReservationController {
       if (!reservation) {
         return res.status(404).json({ message: "Reservation not found" });
       }
-
       // Trả về thông tin reservation
       return res.status(200).json(reservation);
     } catch (error) {
@@ -51,6 +50,20 @@ class ReservationController {
       return res.status(500).json({ message: "Server error" });
     }
   };
+  async canncelReservationById(req, res) {
+    try {
+      const { reservation_id } = req.params;
+      const reservation = await Reservation.findByIdAndUpdate(reservation_id, { status: "CANCELED" }, { new: true });
+      if (!reservation) {
+        return res.status(404).json({ message: "Đơn hàng không tồn tại." });
+      }
+
+      return res.status(200).json({ message: "Đơn hàng đã được hủy.", reservation });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Server error" });
+    }
+  }
   // Get detail reservation by table status
   getReserDetailByTableId = async (req, res) => {
     const { table_id } = req.params;
@@ -118,7 +131,7 @@ class ReservationController {
   // Lấy tất cả đơn đặt bàn theo user_id
   getReservationsByUser = async (req, res) => {
     try {
-    const { userId } = req.params;
+      const { userId } = req.params;
       console.log(userId);
       const reservations = await Reservation.find({ user_id: userId }).sort({ createdAt: -1 });
 
@@ -137,9 +150,12 @@ class ReservationController {
   createClientReservation = async (req, res) => {
     const { startTime, dishs, user_id, guests_count, phoneNumber, userName } = req.body;
     console.log(req.body);
+
     try {
+      // Kiểm tra dữ liệu đầu vào
       if (!req.body) return res.status(401).json({ message: "All data are required" });
-      // 4: create reservation
+
+      // 4: Tạo đặt chỗ
       const newReservation = await Reservation.create({
         user_id,
         userName,
@@ -148,26 +164,31 @@ class ReservationController {
         status: "ISWAITING",
         phoneNumber,
       });
-      // 5: if create reservation successfully, create ordered dish
+
+      // 5: Kiểm tra nếu tạo đặt chỗ thành công
       if (!newReservation) return res.status(401).json({ message: "Can't Create new order" });
 
+      // Tạo mảng món ăn đã đặt
       const orderedDishes = dishs.map((dish) => ({
         dish_id: dish.dish_id,
-        reservation_id: newReservation._doc._id,
+        reservation_id: newReservation._id,
         quantity: dish.quantity,
         status: "ISPREPARED",
       }));
-      // Sử dụng phương thức insertMany để lưu tất cả cùng lúc
-      const insertedOrderedDish = await OrderedDish.insertMany(orderedDishes);
+      const insertedOrderedDishes = await OrderedDish.insertMany(orderedDishes);
+      if (!insertedOrderedDishes) return res.status(401).json({ message: "Can't Create new ordered dish" });
+      const orderedDishIds = insertedOrderedDishes.map((dish) => dish._id);
+      await Reservation.findByIdAndUpdate(newReservation._id, {
+        ordered_dishes: orderedDishIds,
+      });
 
-      if (!insertedOrderedDish) return res.status(401).json({ message: "Can't Create new ordered dish" });
-
-      return res.status(201).json({ message: "Succussfully!" });
+      return res.status(201).json({ message: "Successfully!" });
     } catch (error) {
       console.log("Inventories_Error", error);
       return res.status(500).json({ message: "Internal Server Error" });
     }
   };
+
   // Delete reservation by Array Id
   deleteReservationByIdArray = async (req, res) => {
     const { IdArray: ArrayId } = req.body; // Lấy ArrayId từ body của request
