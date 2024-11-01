@@ -5,6 +5,7 @@ import mongoose from "mongoose";
 import path from "path";
 import { fileURLToPath } from "url";
 import categoryRoute from "./routes/category.route.js";
+import employeeRoute from "./routes/employee.route.js";
 import dishRoute from "./routes/dish.route.js";
 import userRoutes from "./routes/user.route.js";
 import tableRoute from "./routes/table.route.js";
@@ -28,6 +29,8 @@ app.use("/upload", express.static(path.join(__dirname, "upload")));
 app.use("/users", userRoutes);
 // category route
 app.use(categoryRoute);
+// employee route
+app.use(employeeRoute);
 // dish route
 app.use(dishRoute);
 // table route
