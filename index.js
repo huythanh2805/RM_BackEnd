@@ -13,6 +13,8 @@ import locationRoute from "./routes/location.route.js";
 import reservationRoute from "./routes/Reservation.route.js";
 import orderedFoodRoute from "./routes/orderedFood.route.js";
 import billRoute from "./routes/bill.route.js";
+import setComboRoute from "./routes/setCombo.route.js";
+
 // .env
 dotenv.config();
 const port = process.env.PORT || 3333;
@@ -43,6 +45,8 @@ app.use("/api", reservationRoute);
 app.use("/api", orderedFoodRoute);
 // bill route
 app.use("/api", billRoute);
+// setCombo route
+app.use(setComboRoute);
 
 // connect to db
 mongoose
