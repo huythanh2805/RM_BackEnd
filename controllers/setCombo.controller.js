@@ -1,21 +1,34 @@
-import SetComBo from "../models/SetCombo.js";
-import SetComBoProduct from "../models/SetComboProducts.js";
+import SetCombo from "../models/SetCombo.js";
+import SetComboProduct from "../models/SetComboProducts.js";
 
 class SetComboController {
   async getAllSetCombos(req, res) {
     try {
-      const setCombos = await SetComBo.find({});
+      const setCombos = await SetCombo.find({});
 
-      if (!setCombos || setCombos.length === 0) {
+      const setCombosWithProducts = await Promise.all(
+        setCombos.map(async (setCombo) => {
+          const setComboProducts = await SetComboProduct.find({
+            combo_id: setCombo._id,
+          }).populate("dishes", "name price images");
+
+          return {
+            ...setCombo._doc,
+            setComboProducts,
+          };
+        })
+      );
+
+      if (!setCombosWithProducts || setCombosWithProducts.length === 0) {
         return res.status(404).json({
-          message: "No setCombos found",
+          message: "No set combos found",
         });
       }
 
-      return res.status(200).json(setCombos);
+      return res.status(200).json(setCombosWithProducts);
     } catch (error) {
       return res.status(500).json({
-        message: "Get all setCombos failed",
+        message: "Get all set combos failed",
         error: error.message,
       });
     }
@@ -23,18 +36,25 @@ class SetComboController {
 
   async getSetComboDetail(req, res) {
     try {
-      const setCombo = await SetComBo.findById(req.params.id);
+      const setCombo = await SetCombo.findById(req.params.id);
 
       if (!setCombo) {
         return res.status(404).json({
-          message: "SetCombo not found",
+          message: "Set combo not found",
         });
       }
 
-      return res.status(200).json(setCombo);
+      const setComboProducts = await SetComboProduct.find({
+        combo_id: setCombo._id,
+      }).populate("dishes", "name price images");
+
+      return res.status(200).json({
+        ...setCombo._doc,
+        setComboProducts,
+      });
     } catch (error) {
       return res.status(500).json({
-        message: "Get setCombo detail failed",
+        message: "Get set combo detail failed",
         error: error.message,
       });
     }
@@ -42,31 +62,33 @@ class SetComboController {
 
   async createSetCombo(req, res) {
     try {
-      const existingSetCombo = await SetComBo.findOne({ name: req.body.name });
-      if (existingSetCombo) {
+      const existingCombo = await SetCombo.findOne({ name: req.body.name });
+      if (existingCombo) {
         return res.status(400).json({
           message: "The setCombo name already exists",
         });
       }
 
-      const { name, price, desc, isShow, dishes } = req.body;
-
       const images = req.files
         ? req.files.map((file) => file.path)
         : req.body.images;
 
-      const newSetCombo = new SetComBo({ name, price, desc, isShow, images });
-      await newSetCombo.save();
-
-      const newSetComboProduct = new SetComBoProduct({
-        dishes,
-        combo_id: newSetCombo._id,
+      const setCombo = await SetCombo.create({
+        name: req.body.name,
+        price: req.body.price,
+        images,
+        desc: req.body.desc,
+        isShow: req.body.isShow,
       });
-      await newSetComboProduct.save();
+
+      const setComboProducts = await SetComboProduct.create({
+        combo_id: setCombo._id,
+        dishes: req.body.dishes,
+      });
 
       return res.status(201).json({
-        setCombo: newSetCombo,
-        setComboProduct: newSetComboProduct,
+        ...setCombo._doc,
+        setComboProducts,
       });
     } catch (error) {
       return res.status(500).json({
@@ -78,48 +100,49 @@ class SetComboController {
 
   async updateSetCombo(req, res) {
     try {
-      const existingSetCombo = await SetComBo.findOne({
+      const existingCombo = await SetCombo.findOne({
         name: req.body.name,
         _id: { $ne: req.params.id },
       });
-      if (existingSetCombo) {
+      if (existingCombo) {
         return res.status(400).json({
-          message: "The setCombo name already exists",
+          message: "The set combo name already exists",
         });
       }
-
-      const { name, price, desc, isShow, dishes } = req.body;
 
       const images = req.files
         ? req.files.map((file) => file.path)
         : req.body.images;
 
-      const updateData = { name, price, desc, isShow, images };
-      const setCombo = await SetComBo.findByIdAndUpdate(
+      const updateData = {
+        name: req.body.name,
+        price: req.body.price,
+        images,
+        desc: req.body.desc,
+        isShow: req.body.isShow,
+      };
+
+      const setCombo = await SetCombo.findByIdAndUpdate(
         req.params.id,
         updateData,
+        {
+          new: true,
+        }
+      );
+
+      const setComboProducts = await SetComboProduct.findOneAndUpdate(
+        { combo_id: setCombo._id },
+        { dishes: req.body.dishes },
         { new: true }
       );
 
-      if (!setCombo) {
-        return res.status(404).json({
-          message: "SetCombo not found",
-        });
-      }
-
-      const setComboProduct = await SetComBoProduct.findOneAndUpdate(
-        { combo_id: setCombo._id },
-        { dishes },
-        { new: true, upsert: true }
-      );
-
       return res.status(200).json({
-        setCombo: setCombo,
-        setComboProduct: setComboProduct,
+        ...setCombo._doc,
+        setComboProducts,
       });
     } catch (error) {
       return res.status(500).json({
-        message: "Update setCombo failed",
+        message: "Update set combo failed",
         error: error.message,
       });
     }
@@ -127,20 +150,22 @@ class SetComboController {
 
   async deleteSetCombo(req, res) {
     try {
-      const setCombo = await SetComBo.findByIdAndDelete(req.params.id);
+      const setCombo = await SetCombo.findByIdAndDelete(req.params.id);
 
       if (!setCombo) {
         return res.status(404).json({
-          message: "SetCombo not found",
+          message: "Set combo not found",
         });
       }
 
+      await SetComboProduct.deleteMany({ combo_id: req.params.id });
+
       return res.status(200).json({
-        message: "SetCombo deleted successfully",
+        message: "Set combo deleted successfully",
       });
     } catch (error) {
       return res.status(500).json({
-        message: "Delete setCombo failed",
+        message: "Delete set combo failed",
         error: error.message,
       });
     }
