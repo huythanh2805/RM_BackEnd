@@ -164,6 +164,7 @@ class ReservationController {
         status: "ISWAITING",
         phoneNumber,
       })
+      
       // 5: if create reservation successfully, create ordered dish
         if (!newReservation) return res.status(401).json({ message: "Can't Create new order" })
           
@@ -175,6 +176,7 @@ class ReservationController {
       }));
       // Sử dụng phương thức insertMany để lưu tất cả cùng lúc
       const insertedOrderedDish = await OrderedDish.insertMany(orderedDishes);
+
 
       if (!insertedOrderedDish) return res.status(401).json({ message: "Can't Create new ordered dish" })
 
