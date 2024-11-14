@@ -201,23 +201,28 @@ class ReservationController {
     }
 
     try {
+    //  update lại trạng thái của table
+    const reservations = await Reservation.find({
+      _id: { $in: ArrayId }
+    });
+    // Lấy danh sách các table_id từ các reservation
+    const tableIds = reservations.map(reservation => reservation.table_id);
+
+    // Bước 2: Cập nhật trạng thái của tất cả các table có id trong danh sách tableIds về 'available'
+      await Table.updateMany(
+      { _id: { $in: tableIds } },
+      { $set: { status: 'AVAILABLE' } }
+      );
+
       // Sử dụng deleteMany để xóa các reservation có id nằm trong ArrayId
-      const result = await Reservation.deleteMany({
-        _id: { $in: ArrayId }, // Điều kiện _id nằm trong mảng ArrayId
+      await Reservation.deleteMany({
+        _id: {$in: ArrayId }, // Điều kiện _id nằm trong mảng ArrayId
       });
-
-      // Kiểm tra xem có xóa được tài liệu nào không
-      if (result.deletedCount === 0) {
-        return res.status(404).json({
-          success: false,
-          message: "No reservations found with the given ids",
-        });
-      }
-
+      
       // Trả về kết quả thành công
       return res.status(200).json({
         success: true,
-        message: `${result.deletedCount} reservations were deleted`,
+        message: `Reservations were deleted`,
       });
     } catch (error) {
       // Xử lý lỗi khi thực hiện xóa
