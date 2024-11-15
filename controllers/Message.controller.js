@@ -34,7 +34,6 @@ const getMessagesByConversationId = async ( req, res) => {
   try {
     // Tìm tất cả các tin nhắn có conversationId phù hợp
     const messages = await Message.find({ conversationId }).populate('senderId').sort({ timestamp: 1 });
-    console.log({messages})
     return res.status(201).json({messages});
   } catch (error) {
     console.error('Error in getMessagesByConversationId:', error);
@@ -69,7 +68,7 @@ const getConversationWithMessagesByUserId = async (req, res) => {
     res.status(500).json({ error: 'Failed to get conversation with messages' });
   }
 }
-// Lấy  những tin nhắn chưa được xem dựa trên adminId
+// Lấy những tin nhắn chưa được xem dựa trên adminId
 const getUnseenMessageCountAdmin = async (req, res) => {
   try {
     const { adminId } = req.params;
@@ -113,19 +112,19 @@ const getUnseenMessageCountClient = async (req, res) => {
 const updateMessagesToSeen = async (req, res) => {
   try {
     const { conversationId , userId} = req.params;
-
+    
     // Cập nhật tất cả messages có conversationId và seen là false thành true
     const updatedMessages = await Message.updateMany(
       { conversationId: conversationId, seen: false, senderId: { $ne: userId } },
       { $set: { seen: true } }
     );
 
-    res.status(200).json({
+   return res.status(200).json({
       message: "Đã cập nhật trạng thái seen thành true cho các messages",
       updatedCount: updatedMessages.modifiedCount,
     });
   } catch (error) {
-    res.status(500).json({ message: "Lỗi khi cập nhật trạng thái seen", error });
+   return res.status(500).json({ message: "Lỗi khi cập nhật trạng thái seen", error });
   }
 };
 // Xóa tất cả
