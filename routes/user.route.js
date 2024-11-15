@@ -4,7 +4,8 @@ import { auth } from "../middlewares/auth.js";
 import upload from "../middlewares/upload.js"; // Middleware upload sử dụng multer
 
 const router = express.Router();
-
+// Lấy thông tin người dùng dựa trên id người dùng
+router.get("/get/v2/:id", UserController.getUserById);
 // Các routes dành cho người dùng
 router.post("/google-login", UserController.googleLogin);
 router.post("/register", UserController.register);

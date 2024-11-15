@@ -54,10 +54,12 @@ const getConversationsByAdminId = async (req, res) => {
 
   try {
     // Tìm tất cả các conversation mà adminId có trong mảng adminIds
-    const conversations = await Conversation.find({
-      adminIds: adminId,
+     const conversations = await Conversation.find({
+      $or: [
+        { adminIds: adminId },
+        { userId: adminId }
+      ]
     });
-
     // Lấy ID của các conversation
     const conversationIds = conversations.map((conv) => conv._id);
 
@@ -74,20 +76,14 @@ const getConversationsByAdminId = async (req, res) => {
       },
       {
         $addFields: {
-          // Lọc tin nhắn sao cho senderId không nằm trong adminIds
-          filteredMessages: {
-            $filter: {
-              input: "$messages",
-              as: "message",
-              cond: { $not: { $in: ["$$message.senderId", "$adminIds"] } }
+          // Lấy tin nhắn cuối cùng từ messages mà không cần lọc theo senderId
+          lastMessage: { 
+            $cond: {
+              if: { $gt: [{ $size: "$messages" }, 0] },
+              then: { $arrayElemAt: ["$messages", -1] },
+              else: null
             }
           }
-        },
-      },
-      {
-        // Lấy tin nhắn cuối cùng từ filteredMessages
-        $addFields: {
-          lastMessage: { $arrayElemAt: [{ $slice: ["$filteredMessages", -1] }, 0] },
         },
       },
       {
@@ -110,6 +106,7 @@ const getConversationsByAdminId = async (req, res) => {
             conversationId: 1,
             senderId: 1,
             text: 1,
+            seen: 1,
             createdAt: 1,            // Đảm bảo giữ lại createdAt trong lastMessage
           },
         },

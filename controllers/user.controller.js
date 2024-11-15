@@ -352,6 +352,25 @@ class UserController {
       return res.status(500).json({ message: "Lỗi khi đánh dấu người dùng là đã xóa", error });
     }
   }
+
+  //get user by id
+  async deleteUser(req, res) {
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ message: "ID người dùng không hợp lệ" });
+    }
+    try {
+      const user = await User.findById(id);
+      console.log("Updated User:", user);
+
+      if (!user) {
+        return res.status(404).json({ message: "Người dùng không tồn tại" });
+      }
+      return res.status(200).json({user});
+    } catch (error) {
+      return res.status(500).json({ message: "Lỗi khi đánh dấu người dùng là đã xóa", error });
+    }
+  }
 }
 
 export default new UserController();
