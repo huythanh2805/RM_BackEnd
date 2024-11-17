@@ -7,5 +7,6 @@ const billController = new BillController();
 
 router.get("/bills/:id", billController.getBillById);
 router.post("/bills", billController.createBill);
+router.get("/bills", billController.getAll);
 
 export default router;
