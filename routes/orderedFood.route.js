@@ -10,5 +10,5 @@ router.get("/orderedFood/:reservationId", orderedFoodController.getAllOrderedFoo
 router.post("/orderedFood", orderedFoodController.addNewOrderedDish);
 router.patch("/orderedFood/:orderedDishId", orderedFoodController.updateOrderedDish);
 router.put("/orderedFood", orderedFoodController.updateOrderedDishesStatus);
-router.delete("/orderedFood/:orderedDishId", orderedFoodController.deleteOrderedDish);
+router.delete("/orderedFood/:orderedDishId/:reservationId", orderedFoodController.deleteOrderedDish);
 export default router;

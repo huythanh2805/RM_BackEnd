@@ -14,6 +14,7 @@ import tableRoute from "./routes/table.route.js";
 import locationRoute from "./routes/location.route.js";
 import reservationRoute from "./routes/Reservation.route.js";
 import orderedFoodRoute from "./routes/orderedFood.route.js";
+import orderedComboRoute from "./routes/orderedCombo.route.js";
 import billRoute from "./routes/bill.route.js";
 import setComboRoute from "./routes/setCombo.route.js";
 import messageRoute from "./routes/message.route.js";
@@ -47,6 +48,8 @@ app.use("/api/reservations", locationRoute);
 app.use("/api", reservationRoute);
 // orderedFood route
 app.use("/api", orderedFoodRoute);
+// orderedCombo route
+app.use("/api", orderedComboRoute);
 // bill route
 app.use("/api", billRoute);
 // setCombo route

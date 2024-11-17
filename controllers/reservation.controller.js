@@ -29,6 +29,17 @@ class ReservationController {
           path: "dish_id", // Populate trường dish_id trong orderedDish
           model: "dish", // Model của dish
         },
+      })
+      .populate({
+        path: "ordered_combos", // Populate các dish liên quan
+        populate: {
+          path: "setComboProduct_id", // Populate trường dish_id trong orderedDish
+          model: "setComboProduct",
+          populate: {
+            path: "combo_id",
+            model: "setCombo",
+          }
+        },
       });
     return reservation;
   };

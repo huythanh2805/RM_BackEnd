@@ -1,4 +1,5 @@
 import Bill from "../models/bill.js"
+import BillCombo from "../models/billCombo.js"
 import BillDetail from "../models/billDetail.js"
 import BillDish from "../models/billDish.js"
 import Reservation from "../models/reservation.js"
@@ -41,11 +42,22 @@ class BillController {
           images: ordered_dish.dish_id.images,
           desc: ordered_dish.dish_id.desc,
           quantity: ordered_dish.quantity,
-          status: ordered_dish.status,
         })
         billDetail.orderedDishes.push(billDish._doc._id)
       }
+      for (const ordered_combos of reservation.ordered_combos) {
+        const billCombo = await BillCombo.create({
+          name: ordered_combos.setComboProduct_id.combo_id.name,
+          price: ordered_combos.setComboProduct_id.combo_id.price,
+          images: ordered_combos.setComboProduct_id.combo_id.images,
+          desc: ordered_combos.setComboProduct_id.combo_id.desc,
+          quantity: ordered_combos.quantity,
+        })
+        billDetail.orderedCombos.push(billCombo._doc._id)
+      }
+
       const newBillDetail = await billDetail.save()
+
       await Bill.findByIdAndUpdate(newBill._id, {
         billDetail_id: newBillDetail._doc._id,
       })

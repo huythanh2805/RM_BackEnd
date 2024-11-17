@@ -15,7 +15,12 @@ const billSchame = new mongoose.Schema(
       type: Number,
       required: true
     },
-    discounted_money: {
+    VAT: {
+      type: Number,
+      default: 5
+      // Tính theo phần trăm
+    },
+    total_money: {
       type: Number,
     },
     status: {

@@ -1,3 +1,5 @@
+import { model } from "mongoose"
+import OrderedCombo from "../models/orderedCombo.js"
 import OrderedDish from "../models/orderedDish.js"
 import Reservation from "../models/reservation.js"
 class OrderedFoodController {
@@ -10,7 +12,33 @@ class OrderedFoodController {
       const orderedFoods = await OrderedDish.find({
         reservation_id: reservationId,
       }).populate("dish_id")
-      return res.status(201).json(orderedFoods)
+      const orderedCombos = await OrderedCombo.find({
+        reservation_id: reservationId,
+      }).populate({
+        path: "setComboProduct_id",
+        model: 'setComboProduct',
+        populate: [
+          {
+            path: "dishes",
+            model: "dish",
+          },
+          {
+            path: "combo_id",
+            model: "setCombo",
+          },
+        ],
+      })
+      const combos = orderedCombos.map(combo=>{
+        const {_id, ...rest} = combo.setComboProduct_id.combo_id
+        return {
+          ...rest._doc,
+          ...combo._doc,
+          dish_id: {...combo.setComboProduct_id.combo_id._doc},
+          type: 'combo'
+        }
+      })
+      const foods = orderedFoods.map(food=>({...food.dish_id._doc,...food._doc}))
+      return res.status(201).json([...combos, ...foods])
     } catch (error) {
       console.log("Inventories_Error", error)
       return res.status(500).json({ message: "Internal Server Error" })
@@ -29,23 +57,24 @@ class OrderedFoodController {
       
        await Reservation.findByIdAndUpdate(
         reservation_id,
-        { $push: { ordered_dishes : orderedFood._doc._id } }, // Dùng toán tử $push để thêm vào mảng
+        { $push: { ordered_dishes : orderedFood._doc._id }}, // Dùng toán tử $push để thêm vào mảng
     );
       // retrun newest orderedFood with address populate
       const newestOrderedFood = await OrderedDish.findById(
         orderedFood._id
       ).populate("dish_id")
 
-      return res.status(201).json({ orderedFood: newestOrderedFood })
+      return res.status(201).json({ orderedFood: { ...newestOrderedFood.dish_id._doc, ...newestOrderedFood._doc, type: 'dish'} })
     } catch (error) {
       console.log("Inventories_Error", error)
       return res.status(500).json({ message: "Internal Server Error" })
     }
   }
   // Update ordered dish
-  async updateOrderedDish(req, res) {
+  async updateOrderedDish(req, res) { 
     const orderedDish_id = req.params.orderedDishId
     const { quantity } = req.body
+   
     if (!orderedDish_id)
       return res
         .status(401)
@@ -58,6 +87,7 @@ class OrderedFoodController {
         { quantity: quantity },
         { new: true }
       )
+      
       return res
         .status(201)
         .json({ message: "Update Successfully!", orderedFood: updatedDish })
@@ -68,14 +98,19 @@ class OrderedFoodController {
   }
   // Delete orderedDish
   async deleteOrderedDish(req, res) {
-    const orderedDish_id = req.params.orderedDishId
-    if (!orderedDish_id)
+    const {orderedDishId, reservationId} = req.params
+    console.log(orderedDishId)
+    console.log(reservationId)
+    if (!orderedDishId)
       return res
         .status(401)
         .json({ message: "There is no Id to delete ordered dish" })
     try {
-      await OrderedDish.findByIdAndDelete(orderedDish_id)
-
+      await OrderedDish.findByIdAndDelete(orderedDishId)
+      await Reservation.updateOne(
+        { _id: reservationId }, // Tìm document theo ID
+        { $pull: { ordered_dishes: orderedDishId } } 
+      );
       return res.status(201).json({ message: "Successfully" })
     } catch (error) {
       return res.status(500).json({ message: "Internal Server Error" })
