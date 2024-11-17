@@ -1,3 +1,7 @@
+import bill from '../models/bill.js';
+import billCombo from '../models/billCombo.js';
+import billDetail from '../models/billDetail.js';
+import billDish from '../models/billDish.js';
 import Conversation from '../models/conversation.js';
 import Message from '../models/message.js';
 import User from '../models/user.js'; // Giả sử model User để tìm các admin
@@ -128,9 +132,19 @@ const updateMessagesToSeen = async (req, res) => {
   }
 };
 // Xóa tất cả
-const deleteAll = async () =>{
-  await Message.deleteMany({})
-  await Conversation.deleteMany({})
+const deleteAll = async (req, res) =>{
+  // await Message.deleteMany({})
+  // await Conversation.deleteMany({})
+  try {
+    await bill.deleteMany({})
+  await billCombo.deleteMany({})
+  await billDish.deleteMany({})
+  await billDetail.deleteMany({})
+  res.json({message: 'successfull'})
+  } catch (error) {
+    
+  }
+
 }
 export {
     CreateMessager ,

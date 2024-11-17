@@ -22,9 +22,7 @@ const billDishSchame = new mongoose.Schema({
         default: 1,
         required: true
     },
-    status: {
-        type: String
-    }
+    
 }, 
 {
     timestamps: true

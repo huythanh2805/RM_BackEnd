@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 
 const OrderedComboSchame = new mongoose.Schema({
-    orderedCombo: {
+    setComboProduct_id: {
         type: mongoose.Schema.ObjectId,
         ref: 'setComboProduct'
     },
