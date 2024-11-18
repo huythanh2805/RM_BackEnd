@@ -1,5 +1,6 @@
 import { sendEmailConfirmedStatus } from "../configs/transporter.js";
 import OrderedDish from "../models/orderedDish.js";
+import OrderdCombo from "../models/orderedCombo.js"
 import Reservation from "../models/reservation.js";
 import Table from "../models/table.js";
 
@@ -113,8 +114,7 @@ class ReservationController {
   };
   // add new reservation admin
   createAdminReservation = async (req, res) => {
-    const { table_id, userName, guests_count, payment_method, startTime, detailAddress, phoneNumber } = req.body;
-    console.log(req.body);
+    const { table_id, userName, guests_count, payment_method, startTime, detailAddress, phoneNumber, orderedFoods } = req.body;
     try {
       if (!userName || !guests_count || !payment_method || !detailAddress || !phoneNumber)
         return res.status(401).json({ message: "All data are required" });
@@ -129,11 +129,32 @@ class ReservationController {
         status: "SEATED",
         phoneNumber,
       });
-      // 5: if create reservation successfully update table status
-      if (newReservation) {
+      // 5: push orderedDish _id or orderedCombo _id into reservation
+      // Tạo mới billDish và insert vào billDetail
+      console.log({orderedFoods})
+      for (const orderedDish of orderedFoods) {
+        if(orderedDish.type === 'combo'){
+          const newOrderedCombo = await OrderdCombo.create({
+            setComboProduct_id: orderedDish._id,
+            quantity: orderedDish.quantity,
+            reservation_id: newReservation._doc._id,
+          })
+          newReservation.ordered_combos.push(newOrderedCombo._doc._id)
+        }else if(orderedDish.type === 'dish'){
+          const newOrderedDish = await OrderedDish.create({
+            dish_id: orderedDish.dish_id._id,
+            quantity: orderedDish.quantity,
+            reservation_id: newReservation._doc._id,
+          })
+          newReservation.ordered_dishes.push(newOrderedDish._doc._id)
+        }
+      }
+      const reservation = await newReservation.save()
+      // 6: if create reservation successfully update table status
+      if (reservation) {
         await Table.findByIdAndUpdate({ _id: table_id }, { status: "ISSERVING" }, { new: true });
       }
-      return res.status(201).json({ message: "Succussfully!", reservation: newReservation });
+      return res.status(201).json({ message: "Succussfully!", reservation });
     } catch (error) {
       console.log("Inventories_Error", error);
       return res.status(500).json({ message: "Internal Server Error" });

@@ -136,13 +136,19 @@ class BillController {
       })
       .populate({
         path: "billDetail_id",
-        populate: {
-          path: "orderedDishes",
-          model: "billDish",
-        },
-      });
-    return bill;
-  };
+        populate: [
+          {
+            path: "orderedDishes",
+            model: "billDish",
+          },
+          {
+            path: "orderedCombos",
+            model: "billCombo",
+          },
+        ]
+      })
+    return bill
+  }
   getBillById = async (req, res) => {
     const { id } = req.params;
     try {

@@ -28,6 +28,7 @@ class OrderedFoodController {
           },
         ],
       })
+      console.log({orderedCombos})
       const combos = orderedCombos.map(combo=>{
         const {_id, ...rest} = combo.setComboProduct_id.combo_id
         return {
