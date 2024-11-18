@@ -30,6 +30,10 @@ class BillController {
             path: "orderedDishes",
             model: "billDish",
           },
+          populate: {
+            path: "orderedCombos",
+            model: "billCombo",
+          },
         });
 
       if (bills.length === 0) {
@@ -145,10 +149,10 @@ class BillController {
             path: "orderedCombos",
             model: "billCombo",
           },
-        ]
-      })
-    return bill
-  }
+        ],
+      });
+    return bill;
+  };
   getBillById = async (req, res) => {
     const { id } = req.params;
     try {
