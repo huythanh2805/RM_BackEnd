@@ -97,10 +97,16 @@ class BillController {
       })
       .populate({
         path: "billDetail_id",
-        populate: {
-          path: "orderedDishes",
-          model: "billDish",
-        },
+        populate: [
+          {
+            path: "orderedDishes",
+            model: "billDish",
+          },
+          {
+            path: "orderedCombos",
+            model: "billCombo",
+          },
+        ]
       })
     return bill
   }
