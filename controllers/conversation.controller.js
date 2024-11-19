@@ -35,7 +35,6 @@ const CreateConversation = async (req, res) => {
           adminIds,
         })
       }
-     
     }
 
     return res.status(201).json({ message: "Tạo thành công", conversationId: conversation._id });
