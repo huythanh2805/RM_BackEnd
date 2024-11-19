@@ -36,8 +36,10 @@ const CreateMessager = async (req, res) => {
 const getMessagesByConversationId = async ( req, res) => {
   const {conversationId} = req.params
   try {
+    if(!conversationId || conversationId === 'undefined') return res.status(401).json({message: 'Conversation Id must be required'})
     // Tìm tất cả các tin nhắn có conversationId phù hợp
     const messages = await Message.find({ conversationId }).populate('senderId').sort({ timestamp: 1 });
+    console.log({messages})
     return res.status(201).json({messages});
   } catch (error) {
     console.error('Error in getMessagesByConversationId:', error);
@@ -133,13 +135,13 @@ const updateMessagesToSeen = async (req, res) => {
 };
 // Xóa tất cả
 const deleteAll = async (req, res) =>{
-  // await Message.deleteMany({})
-  // await Conversation.deleteMany({})
   try {
-    await bill.deleteMany({})
-  await billCombo.deleteMany({})
-  await billDish.deleteMany({})
-  await billDetail.deleteMany({})
+    await Message.deleteMany({})
+    await Conversation.deleteMany({})
+  //   await bill.deleteMany({})
+  // await billCombo.deleteMany({})
+  // await billDish.deleteMany({})
+  // await billDetail.deleteMany({})
   res.json({message: 'successfull'})
   } catch (error) {
     
