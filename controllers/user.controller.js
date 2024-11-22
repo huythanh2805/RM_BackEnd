@@ -12,40 +12,33 @@ class UserController {
     const { token } = req.body;
 
     try {
-      console.log("Received token:", token);
-      // Xác thực token Google
       const ticket = await client.verifyIdToken({
         idToken: token,
         audience: "1034244549008-5hm8ddao395soh8ebcgpcj3q1tl9q83f.apps.googleusercontent.com",
       });
       const payload = ticket.getPayload();
       const { email, name, picture } = payload;
-
-      // Kiểm tra xem người dùng đã tồn tại chưa
       let user = await User.findOne({ email });
-
       if (!user) {
-        // Nếu chưa tồn tại, tạo mới người dùng
         user = new User({
           email,
           userName: name,
           image: picture,
-          provider: "google", // Để đánh dấu rằng người dùng này đăng nhập qua Google
+          provider: "google", 
         });
         await user.save();
       }
-      console.log(user);
-      // Tạo JWT cho người dùng
-      const jwtToken = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
-
-      // Gửi phản hồi về phía client
+      const jwtToken = jwt.sign({ id: user._id, email: user.email, role: user.role }, process.env.JWT_SECRET, {
+        expiresIn: "7d",
+      });
       res.status(200).json({
         message: "Login successful",
-        token: jwtToken, // Gửi token đã tạo cho client
+        token: jwtToken, 
         user: {
           email: user.email,
           userName: user.userName,
-          avatar: user.avatar,
+          avatar: user.image,
+          role: user.role,
         },
       });
     } catch (error) {
@@ -366,7 +359,7 @@ class UserController {
       if (!user) {
         return res.status(404).json({ message: "Người dùng không tồn tại" });
       }
-      return res.status(200).json({user});
+      return res.status(200).json({ user });
     } catch (error) {
       return res.status(500).json({ message: "Lỗi khi đánh dấu người dùng là đã xóa", error });
     }
