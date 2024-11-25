@@ -1,10 +1,11 @@
 import Feedback from "../models/feedback.js";
-import message from "../models/message.js";
 
 class FeedbackController {
   async getAllFeedback(req, res) {
     try {
-      const feedbacks = await Feedback.find({});
+      const feedbacks = await Feedback.find({})
+        .populate("user_id", "email userName image createdAt")
+        .populate("dish_id", "name");
 
       if (feedbacks.length === 0) {
         return res.status(404).json({
@@ -25,7 +26,9 @@ class FeedbackController {
     const { id } = req.params;
 
     try {
-      const feedbacks = await Feedback.find({ dish_id: id });
+      const feedbacks = await Feedback.find({ dish_id: id })
+        .populate("user_id", "email userName image createdAt")
+        .populate("dish_id", "name");
 
       if (feedbacks.length === 0) {
         return res
