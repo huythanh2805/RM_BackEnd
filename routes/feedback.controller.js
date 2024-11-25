@@ -1,0 +1,13 @@
+import express from "express";
+import FeedbackController from "../controllers/feedback.controller.js";
+
+const router = express.Router();
+
+const feedbackController = new FeedbackController();
+
+router.get("/feedbacks", feedbackController.getAllFeedback);
+router.get("/feedbacks/dish/:id", feedbackController.getFeedbackByDishId);
+router.post("/feedbacks", feedbackController.createFeedback);
+router.delete("/feedbacks/:id", feedbackController.deleteFeedback);
+
+export default router;
