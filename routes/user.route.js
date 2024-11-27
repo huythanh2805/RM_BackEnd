@@ -14,7 +14,7 @@ router.get("/edit", auth, UserController.getUserProfile);
 router.put("/update", auth, upload.single("image"), UserController.updateUserProfile);
 router.post("/forgot-password", UserController.requestPasswordReset);
 router.post("/reset-password", UserController.resetPassword);
-
+router.post("/change-password", auth, UserController.changePassword);
 // Các routes dành cho quản trị viên
 router.get("/admin/list", UserController.getListUsers);
 router.post("/admin/add", auth, upload.single("image"), UserController.addUser);

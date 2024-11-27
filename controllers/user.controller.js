@@ -10,7 +10,6 @@ class UserController {
   //Login google
   async googleLogin(req, res) {
     const { token } = req.body;
-
     try {
       const ticket = await client.verifyIdToken({
         idToken: token,
@@ -18,22 +17,58 @@ class UserController {
       });
       const payload = ticket.getPayload();
       const { email, name, picture } = payload;
+
       let user = await User.findOne({ email });
       if (!user) {
         user = new User({
           email,
           userName: name,
           image: picture,
-          provider: "google", 
+          provider: "google",
+        });
+        const randomPassword = crypto.randomBytes(3).toString("hex");
+        const hashPassword = await bcrypt.hash(randomPassword, 12);
+        user.password = hashPassword;
+        const mailOptions = {
+          from: "thiuyen1132004@gmail.com",
+          to: user.email,
+          subject: "Mật khẩu đăng nhập",
+          text: `Đây là mật khẩu của bạn, vui lòng dùng nó để đăng nhập: ${randomPassword}`,
+        };
+        transporter.sendMail(mailOptions, (error) => {
+          if (error) {
+            console.error("Error sending email:", error);
+            return res.status(500).json({ message: "Không thể gửi email. Vui lòng thử lại sau." });
+          }
         });
         await user.save();
+      } else {
+        if (!user.password) {
+          const randomPassword = crypto.randomBytes(3).toString("hex");
+          const hashPassword = await bcrypt.hash(randomPassword, 12);
+          user.password = hashPassword;
+          await user.save();
+          const mailOptions = {
+            from: "thiuyen1132004@gmail.com",
+            to: user.email,
+            subject: "Mật khẩu đăng nhập",
+            text: `Đây là mật khẩu của bạn, vui lòng dùng nó để đăng nhập: ${randomPassword}`,
+          };
+
+          transporter.sendMail(mailOptions, (error) => {
+            if (error) {
+              console.error("Error sending email:", error);
+              return res.status(500).json({ message: "Không thể gửi email. Vui lòng thử lại sau." });
+            }
+          });
+        }
       }
       const jwtToken = jwt.sign({ id: user._id, email: user.email, role: user.role }, process.env.JWT_SECRET, {
         expiresIn: "7d",
       });
-      res.status(200).json({
+      return res.status(200).json({
         message: "Login successful",
-        token: jwtToken, 
+        token: jwtToken,
         user: {
           email: user.email,
           userName: user.userName,
@@ -43,9 +78,10 @@ class UserController {
       });
     } catch (error) {
       console.error("Error during Google login:", error);
-      res.status(400).json({ message: "Invalid Google token" });
+      return res.status(400).json({ message: "Invalid Google token" });
     }
   }
+
   //Client
   // Register method
   async register(req, res) {
@@ -89,6 +125,32 @@ class UserController {
       return res.status(200).json({ result: user, token });
     } catch (error) {
       return res.status(500).json({ message: "Lỗi đăng nhập", error });
+    }
+  }
+  async changePassword(req, res) {
+    try {
+      const userId = req.user.id;
+      const { oldPassword, newPassword } = req.body;
+      if (!oldPassword || !newPassword) {
+        return res.status(400).json({ message: "Tất cả các trường là bắt buộc." });
+      }
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "Người dùng không tồn tại." });
+      }
+      const isPasswordCorrect = await bcrypt.compare(oldPassword, user.password);
+      if (!isPasswordCorrect) {
+        return res.status(400).json({ message: "Mật khẩu cũ không đúng." });
+      }
+
+      const hashedPassword = await bcrypt.hash(newPassword, 12);
+      user.password = hashedPassword;
+      await user.save();
+
+      return res.status(200).json({ message: "Đổi mật khẩu thành công." });
+    } catch (error) {
+      console.error("Error changing password:", error);
+      return res.status(500).json({ message: "Có lỗi xảy ra khi đổi mật khẩu." });
     }
   }
   // Get user profile
