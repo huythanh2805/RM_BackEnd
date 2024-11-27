@@ -9,7 +9,7 @@ router.get("/reservations/v2/:table_id", reservationController.getReserDetailByT
 router.post("/reservations/v2/client", reservationController.createClientReservation);
 router.get("/reservations/user/:userId", reservationController.getReservationsByUser);
 router.get("/reservations/history-detail/:reservation_id", reservationController.getReserDetailById);
-router.put("/reservations/cancel/:reservation_id", reservationController.canncelReservationById);
+router.put("/reservations/cancel/:reservation_id", reservationController.cancelReservationById);
 
 router.get("/reservations", reservationController.getAllReser);
 router.get("/reservations/:reservation_id", reservationController.getReserDetailById);
