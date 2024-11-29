@@ -119,7 +119,7 @@ class ReservationController {
     const { table_id, userName, guests_count, payment_method, startTime, detailAddress, phoneNumber, orderedFoods } =
       req.body;
     try {
-      if (!userName || !guests_count || !payment_method || !detailAddress || !phoneNumber)
+      if (!req.body)
         return res.status(401).json({ message: "All data are required" });
       // 4: create reservation
       const newReservation = await Reservation.create({

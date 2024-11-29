@@ -38,7 +38,7 @@ class OrderedFoodController {
           type: 'combo'
         }
       })
-      const foods = orderedFoods.map(food=>({...food.dish_id._doc,...food._doc}))
+      const foods = orderedFoods.map(food=>({...food.dish_id._doc,...food._doc, type: 'dish'}))
       return res.status(201).json([...combos, ...foods])
     } catch (error) {
       console.log("Inventories_Error", error)
@@ -100,8 +100,6 @@ class OrderedFoodController {
   // Delete orderedDish
   async deleteOrderedDish(req, res) {
     const {orderedDishId, reservationId} = req.params
-    console.log(orderedDishId)
-    console.log(reservationId)
     if (!orderedDishId)
       return res
         .status(401)
@@ -144,6 +142,28 @@ class OrderedFoodController {
       return res.status(500).json({ message: 'Error updating dishes', error });
     }
   };
+  // delete  orderedDish by array id
+  //  deleteOrderedFoodByArrayId = async (req, res) => {
+  //   try {
+  //     const { selectedRows, statusValue } = req.body; // Lấy dữ liệu từ body
+  
+  //     if (!Array.isArray(selectedRows) || !selectedRows.length) {
+  //       return res.status(400).json({ message: 'Invalid selectedRows array' });
+  //     }
+  
+  
+  //     const result = await OrderedDish.deleteMany({
+  //       _id: { $in: selectedRows }, 
+  //     });
+  
+  //     // Trả về kết quả sau khi cập nhật
+  //     return res.status(200).json({
+  //       message: `${result.modifiedCount} dishes updated successfully.`,
+  //     });
+  //   } catch (error) {
+  //     return res.status(500).json({ message: 'Error updating dishes', error });
+  //   }
+  // };
 }
 
 export default OrderedFoodController
