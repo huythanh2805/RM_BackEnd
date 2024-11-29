@@ -21,6 +21,7 @@ import reservationRoute from "./routes/Reservation.route.js";
 import setComboRoute from "./routes/setCombo.route.js";
 import tableRoute from "./routes/table.route.js";
 import userRoutes from "./routes/user.route.js";
+import dashBoardRoute from "./routes/dashboard.route.js";
 
 // .env
 dotenv.config();
@@ -63,9 +64,12 @@ app.use("/api", orderedComboRoute);
 app.use("/api", billRoute);
 // setCombo route
 app.use(setComboRoute);
-// setCombo route
+// message route
 app.use("/api", messageRoute);
+// conversation route
 app.use("/api", conversationRoute);
+// dashboard route
+app.use("/api", dashBoardRoute);
 // feedback route
 app.use("/api", notificationRoute);
 
@@ -74,7 +78,7 @@ app.use(feedbackRoute);
 // Socket
 
 io.on("connection", (socket) => {
-  console.log(`User connected: ${socket.id}`);
+  // console.log(`User connected: ${socket.id}`)
 
   // Lắng nghe sự kiện 'sendMessage' từ client
   socket.on("sendMessage", (messageData) => {

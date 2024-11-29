@@ -1,10 +1,5 @@
-import bill from '../models/bill.js';
-import billCombo from '../models/billCombo.js';
-import billDetail from '../models/billDetail.js';
-import billDish from '../models/billDish.js';
 import Conversation from '../models/conversation.js';
 import Message from '../models/message.js';
-import User from '../models/user.js'; // Giả sử model User để tìm các admin
 
 /**
  * Hàm tạo hoặc lấy conversation cho một senderId
