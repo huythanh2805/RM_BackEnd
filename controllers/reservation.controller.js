@@ -66,31 +66,30 @@ class ReservationController {
       return res.status(500).json({ message: "Server error" });
     }
   };
-  async cancelReservationById(req, res) {
+   cancelReservationById = async (req, res) => {
     try {
       const { reservation_id } = req.params;
       const reservation = await Reservation.findByIdAndUpdate(reservation_id, { status: "CANCELED" }, { new: true });
-
       if (!reservation) {
-        return res.status(404).json({ message: "Đơn hàng không tồn tại." });
+        return res.status(404).json({ message: "Đơn hàng không tồn tại." }); // Trả về 404 nếu không tìm thấy
       }
+
       // Tạo thông báo
       const notification = new notifications({
         title: "Hủy đặt bàn",
         message: `Đơn đặt bàn ${reservation_id} đã bị hủy. Vui lòng xem chi tiết.`,
       });
-
       await notification.save();
 
-      // Phát sự kiện qua WebSocket (Giả sử bạn đã cấu hình io)
+      // Phát sự kiện qua WebSocket
       if (this.io) {
-        this.io.emit("newNotification", {
+        this.io.emit("new-notification", {
           title: notification.title,
           message: notification.message,
         });
       }
 
-      return res.status(200).json({ message: "Đơn hàng đã được hủy.", reservation });
+      return res.status(200).json({ message: "Đơn hàng đã được hủy." }); // Trả về thành công
     } catch (error) {
       console.error(error);
       return res.status(500).json({ message: "Đã xảy ra lỗi trong quá trình hủy đơn hàng." });
@@ -242,7 +241,7 @@ class ReservationController {
       await notification.save();
 
       // Phát sự kiện qua WebSocket
-      this.io.emit("newNotification", {
+      this.io.emit("new-notification", {
         title: notification.title,
         message: notification.message,
       });
