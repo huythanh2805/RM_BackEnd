@@ -19,6 +19,7 @@ import billRoute from "./routes/bill.route.js";
 import setComboRoute from "./routes/setCombo.route.js";
 import messageRoute from "./routes/message.route.js";
 import conversationRoute from "./routes/conversation.route.js";
+import dashBoardRoute from "./routes/dashboard.route.js";
 
 // .env
 dotenv.config();
@@ -54,9 +55,12 @@ app.use("/api", orderedComboRoute);
 app.use("/api", billRoute);
 // setCombo route
 app.use(setComboRoute);
-// setCombo route
+// message route
 app.use("/api", messageRoute);
+// conversation route
 app.use("/api", conversationRoute);
+// dashboard route
+app.use("/api", dashBoardRoute);
 
 // Socket 
 const server = http.createServer(app);
@@ -68,7 +72,7 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
-  console.log(`User connected: ${socket.id}`)
+  // console.log(`User connected: ${socket.id}`)
 
   // Lắng nghe sự kiện 'sendMessage' từ client
   socket.on("sendMessage", (messageData) => {
@@ -84,7 +88,7 @@ io.on("connection", (socket) => {
 
     // Kiểm tra xem có bao nhiêu người join room
     const numClients = io.sockets.adapter.rooms.get(roomId)?.size || 0
-    console.log(`Số người trong phòng ${roomId} là: ${numClients}`)
+    // console.log(`Số người trong phòng ${roomId} là: ${numClients}`)
   })
   // Lắng nghe sự kiện tạo 1 conversation
   socket.on("createConversation", (data) => {

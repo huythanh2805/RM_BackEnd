@@ -50,7 +50,7 @@ const CreateConversation = async (req, res) => {
  */
 const getConversationsByAdminId = async (req, res) => {
   const { adminId } = req.params;
-
+  console.log(adminId)
   try {
     // Tìm tất cả các conversation mà adminId có trong mảng adminIds
      const conversations = await Conversation.find({
@@ -117,7 +117,7 @@ const getConversationsByAdminId = async (req, res) => {
     return res.status(201).json({recentConversations});
   } catch (error) {
     console.error('Error in getConversationsByAdminId:', error);
-    throw new Error('Failed to get conversations');
+    // throw new Error('Failed to get conversations');
   }
 };
 export {
