@@ -1,10 +1,14 @@
 import { sendEmailConfirmedStatus } from "../configs/transporter.js";
+import notifications from "../models/notifications.js";
+import OrderdCombo from "../models/orderedCombo.js";
 import OrderedDish from "../models/orderedDish.js";
-import OrderdCombo from "../models/orderedCombo.js"
 import Reservation from "../models/reservation.js";
 import Table from "../models/table.js";
 
 class ReservationController {
+  constructor(io) {
+    this.io = io;
+  }
   // Get all reservation
   getAllReser = async (req, res) => {
     try {
@@ -39,7 +43,7 @@ class ReservationController {
           populate: {
             path: "combo_id",
             model: "setCombo",
-          }
+          },
         },
       });
     return reservation;
@@ -62,20 +66,37 @@ class ReservationController {
       return res.status(500).json({ message: "Server error" });
     }
   };
-  async canncelReservationById(req, res) {
+  async cancelReservationById(req, res) {
     try {
       const { reservation_id } = req.params;
       const reservation = await Reservation.findByIdAndUpdate(reservation_id, { status: "CANCELED" }, { new: true });
+
       if (!reservation) {
         return res.status(404).json({ message: "Đơn hàng không tồn tại." });
+      }
+      // Tạo thông báo
+      const notification = new notifications({
+        title: "Hủy đặt bàn",
+        message: `Đơn đặt bàn ${reservation_id} đã bị hủy. Vui lòng xem chi tiết.`,
+      });
+
+      await notification.save();
+
+      // Phát sự kiện qua WebSocket (Giả sử bạn đã cấu hình io)
+      if (this.io) {
+        this.io.emit("newNotification", {
+          title: notification.title,
+          message: notification.message,
+        });
       }
 
       return res.status(200).json({ message: "Đơn hàng đã được hủy.", reservation });
     } catch (error) {
       console.error(error);
-      return res.status(500).json({ message: "Server error" });
+      return res.status(500).json({ message: "Đã xảy ra lỗi trong quá trình hủy đơn hàng." });
     }
   }
+
   // Get detail reservation by table status
   getReserDetailByTableId = async (req, res) => {
     const { table_id } = req.params;
@@ -114,10 +135,10 @@ class ReservationController {
   };
   // add new reservation admin
   createAdminReservation = async (req, res) => {
-    const { table_id, userName, guests_count, payment_method, startTime, detailAddress, phoneNumber, orderedFoods } = req.body;
+    const { table_id, userName, guests_count, payment_method, startTime, detailAddress, phoneNumber, orderedFoods } =
+      req.body;
     try {
-      if (!req.body)
-        return res.status(401).json({ message: "All data are required" });
+      if (!req.body) return res.status(401).json({ message: "All data are required" });
       // 4: create reservation
       const newReservation = await Reservation.create({
         userName,
@@ -131,25 +152,25 @@ class ReservationController {
       });
       // 5: push orderedDish _id or orderedCombo _id into reservation
       // Tạo mới billDish và insert vào billDetail
-      console.log({orderedFoods})
+      console.log({ orderedFoods });
       for (const orderedDish of orderedFoods) {
-        if(orderedDish.type === 'combo'){
+        if (orderedDish.type === "combo") {
           const newOrderedCombo = await OrderdCombo.create({
             setComboProduct_id: orderedDish._id,
             quantity: orderedDish.quantity,
             reservation_id: newReservation._doc._id,
-          })
-          newReservation.ordered_combos.push(newOrderedCombo._doc._id)
-        }else if(orderedDish.type === 'dish'){
+          });
+          newReservation.ordered_combos.push(newOrderedCombo._doc._id);
+        } else if (orderedDish.type === "dish") {
           const newOrderedDish = await OrderedDish.create({
             dish_id: orderedDish.dish_id._id,
             quantity: orderedDish.quantity,
             reservation_id: newReservation._doc._id,
-          })
-          newReservation.ordered_dishes.push(newOrderedDish._doc._id)
+          });
+          newReservation.ordered_dishes.push(newOrderedDish._doc._id);
         }
       }
-      const reservation = await newReservation.save()
+      const reservation = await newReservation.save();
       // 6: if create reservation successfully update table status
       if (reservation) {
         await Table.findByIdAndUpdate({ _id: table_id }, { status: "ISSERVING" }, { new: true });
@@ -181,13 +202,10 @@ class ReservationController {
   // add new reservation client
   createClientReservation = async (req, res) => {
     const { startTime, dishs, user_id, guests_count, phoneNumber, userName } = req.body;
-    console.log(req.body);
-
     try {
-      // Kiểm tra dữ liệu đầu vào
       if (!req.body) return res.status(401).json({ message: "All data are required" });
 
-      // 4: Tạo đặt chỗ
+      // Tạo đặt chỗ
       const newReservation = await Reservation.create({
         user_id,
         userName,
@@ -197,26 +215,41 @@ class ReservationController {
         phoneNumber,
       });
 
-      // 5: Kiểm tra nếu tạo đặt chỗ thành công
       if (!newReservation) return res.status(401).json({ message: "Can't Create new order" });
 
-      // Tạo mảng món ăn đã đặt
+      // Tạo mảng món ăn
       const orderedDishes = dishs.map((dish) => ({
         dish_id: dish.dish_id,
         reservation_id: newReservation._id,
         quantity: dish.quantity,
         status: "ISPREPARED",
       }));
+
       const insertedOrderedDishes = await OrderedDish.insertMany(orderedDishes);
       if (!insertedOrderedDishes) return res.status(401).json({ message: "Can't Create new ordered dish" });
+
       const orderedDishIds = insertedOrderedDishes.map((dish) => dish._id);
       await Reservation.findByIdAndUpdate(newReservation._id, {
         ordered_dishes: orderedDishIds,
       });
 
+      // Tạo thông báo
+      const notification = new notifications({
+        title: "Yêu cầu đặt bàn mới",
+        message: `Khách hàng ${userName} đã đặt bàn thành công. Vui lòng xác nhận.`,
+      });
+
+      await notification.save();
+
+      // Phát sự kiện qua WebSocket
+      this.io.emit("newNotification", {
+        title: notification.title,
+        message: notification.message,
+      });
+
       return res.status(201).json({ message: "Successfully!" });
     } catch (error) {
-      console.log("Inventories_Error", error);
+      console.error("Inventories_Error", error);
       return res.status(500).json({ message: "Internal Server Error" });
     }
   };
@@ -233,24 +266,21 @@ class ReservationController {
     }
 
     try {
-    //  update lại trạng thái của table
-    const reservations = await Reservation.find({
-      _id: { $in: ArrayId }
-    });
-    // Lấy danh sách các table_id từ các reservation
-    const tableIds = reservations.map(reservation => reservation.table_id);
+      //  update lại trạng thái của table
+      const reservations = await Reservation.find({
+        _id: { $in: ArrayId },
+      });
+      // Lấy danh sách các table_id từ các reservation
+      const tableIds = reservations.map((reservation) => reservation.table_id);
 
-    // Bước 2: Cập nhật trạng thái của tất cả các table có id trong danh sách tableIds về 'available'
-      await Table.updateMany(
-      { _id: { $in: tableIds } },
-      { $set: { status: 'AVAILABLE' } }
-      );
+      // Bước 2: Cập nhật trạng thái của tất cả các table có id trong danh sách tableIds về 'available'
+      await Table.updateMany({ _id: { $in: tableIds } }, { $set: { status: "AVAILABLE" } });
 
       // Sử dụng deleteMany để xóa các reservation có id nằm trong ArrayId
       await Reservation.deleteMany({
-        _id: {$in: ArrayId }, // Điều kiện _id nằm trong mảng ArrayId
+        _id: { $in: ArrayId }, // Điều kiện _id nằm trong mảng ArrayId
       });
-      
+
       // Trả về kết quả thành công
       return res.status(200).json({
         success: true,
