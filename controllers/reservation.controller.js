@@ -74,6 +74,21 @@ class ReservationController {
       if (!reservation) {
         return res.status(404).json({ message: "Đơn hàng không tồn tại." });
       }
+      // Tạo thông báo
+      const notification = new notifications({
+        title: "Hủy đặt bàn",
+        message: `Đơn đặt bàn ${reservation_id} đã bị hủy. Vui lòng xem chi tiết.`,
+      });
+
+      await notification.save();
+
+      // Phát sự kiện qua WebSocket (Giả sử bạn đã cấu hình io)
+      if (this.io) {
+        this.io.emit("newNotification", {
+          title: notification.title,
+          message: notification.message,
+        });
+      }
 
       return res.status(200).json({ message: "Đơn hàng đã được hủy.", reservation });
     } catch (error) {
@@ -123,8 +138,7 @@ class ReservationController {
     const { table_id, userName, guests_count, payment_method, startTime, detailAddress, phoneNumber, orderedFoods } =
       req.body;
     try {
-      if (!req.body)
-        return res.status(401).json({ message: "All data are required" });
+      if (!req.body) return res.status(401).json({ message: "All data are required" });
       // 4: create reservation
       const newReservation = await Reservation.create({
         userName,
@@ -188,8 +202,6 @@ class ReservationController {
   // add new reservation client
   createClientReservation = async (req, res) => {
     const { startTime, dishs, user_id, guests_count, phoneNumber, userName } = req.body;
-    console.log(req.body);
-
     try {
       if (!req.body) return res.status(401).json({ message: "All data are required" });
 
@@ -225,7 +237,6 @@ class ReservationController {
       const notification = new notifications({
         title: "Yêu cầu đặt bàn mới",
         message: `Khách hàng ${userName} đã đặt bàn thành công. Vui lòng xác nhận.`,
-        user_id,
       });
 
       await notification.save();
