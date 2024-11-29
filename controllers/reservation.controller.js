@@ -1,10 +1,14 @@
 import { sendEmailConfirmedStatus } from "../configs/transporter.js";
+import notifications from "../models/notifications.js";
 import OrderdCombo from "../models/orderedCombo.js";
 import OrderedDish from "../models/orderedDish.js";
 import Reservation from "../models/reservation.js";
 import Table from "../models/table.js";
 
 class ReservationController {
+  constructor(io) {
+    this.io = io;
+  }
   // Get all reservation
   getAllReser = async (req, res) => {
     try {
@@ -187,10 +191,9 @@ class ReservationController {
     console.log(req.body);
 
     try {
-      // Kiểm tra dữ liệu đầu vào
       if (!req.body) return res.status(401).json({ message: "All data are required" });
 
-      // 4: Tạo đặt chỗ
+      // Tạo đặt chỗ
       const newReservation = await Reservation.create({
         user_id,
         userName,
@@ -200,26 +203,42 @@ class ReservationController {
         phoneNumber,
       });
 
-      // 5: Kiểm tra nếu tạo đặt chỗ thành công
       if (!newReservation) return res.status(401).json({ message: "Can't Create new order" });
 
-      // Tạo mảng món ăn đã đặt
+      // Tạo mảng món ăn
       const orderedDishes = dishs.map((dish) => ({
         dish_id: dish.dish_id,
         reservation_id: newReservation._id,
         quantity: dish.quantity,
         status: "ISPREPARED",
       }));
+
       const insertedOrderedDishes = await OrderedDish.insertMany(orderedDishes);
       if (!insertedOrderedDishes) return res.status(401).json({ message: "Can't Create new ordered dish" });
+
       const orderedDishIds = insertedOrderedDishes.map((dish) => dish._id);
       await Reservation.findByIdAndUpdate(newReservation._id, {
         ordered_dishes: orderedDishIds,
       });
 
+      // Tạo thông báo
+      const notification = new notifications({
+        title: "Yêu cầu đặt bàn mới",
+        message: `Khách hàng ${userName} đã đặt bàn thành công. Vui lòng xác nhận.`,
+        user_id,
+      });
+
+      await notification.save();
+
+      // Phát sự kiện qua WebSocket
+      this.io.emit("newNotification", {
+        title: notification.title,
+        message: notification.message,
+      });
+
       return res.status(201).json({ message: "Successfully!" });
     } catch (error) {
-      console.log("Inventories_Error", error);
+      console.error("Inventories_Error", error);
       return res.status(500).json({ message: "Internal Server Error" });
     }
   };
