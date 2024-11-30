@@ -123,6 +123,34 @@ class DishController {
       });
     }
   }
+
+  async getRelatedDishes(req, res) {
+    try {
+      const { id } = req.params;
+
+      const dish = await Dish.findById(id);
+
+      if (!dish) {
+        return res.status(404).json({
+          message: "Dish not found",
+        });
+      }
+
+      
+      const relatedDishes = await Dish.find({
+        category_id: dish.category_id,
+        _id: { $ne: id },
+        isShow: true,
+      }).limit(5);
+
+      return res.status(200).json(relatedDishes);
+    } catch (error) {
+      return res.status(500).json({
+        message: "Get related dishes failed",
+        error: error.message,
+      });
+    }
+  }
 }
 
 export default DishController;
