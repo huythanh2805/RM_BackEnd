@@ -1,5 +1,9 @@
 import express from "express";
-import { getReservationStatusCount, getRevenueDashboard, getTop5OrderedDishes, getTotalRevenueByMonth } from "../controllers/dashboard.controller.js";
+import { 
+     getReservationStatusCount,
+     getRevenueDashboard,
+     getTop5OrderedDishes,
+     getTotalRevenueByMonth } from "../controllers/dashboard.controller.js";
 const router = express.Router();
 
 
