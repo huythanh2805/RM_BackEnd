@@ -10,5 +10,7 @@ router.get("/dishes/:id", dishController.getDishDetail);
 router.post("/dishes", dishController.createDish);
 router.put("/dishes/:id", dishController.updateDish);
 router.delete("/dishes/:id", dishController.deleteDish);
+router.get("/dishes/:id/related", dishController.getRelatedDishes);
+
 
 export default router;
