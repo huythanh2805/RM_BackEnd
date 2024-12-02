@@ -1,13 +1,15 @@
 import express from "express";
 import BillController from "../controllers/bill.controller.js";
+const billRouter = (io) => {
+  const router = express.Router();
 
-const router = express.Router();
+  const billController = new BillController(io);
 
-const billController = new BillController();
+  router.get("/bills/:id", billController.getBillById);
+  router.post("/bills", billController.createBill);
+  router.get("/bills", billController.getAll);
+  router.post("/webhook/seepay", billController.payment);
+  return router;
+};
 
-router.get("/bills/:id", billController.getBillById);
-router.post("/bills", billController.createBill);
-router.get("/bills", billController.getAll);
-router.post("/payment", billController.payment);
-
-export default router;
+export default billRouter;
