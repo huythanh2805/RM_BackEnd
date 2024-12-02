@@ -9,6 +9,7 @@ import { fileURLToPath } from "url";
 import billRoute from "./routes/bill.route.js";
 import categoryRoute from "./routes/category.route.js";
 import conversationRoute from "./routes/conversation.route.js";
+import dashBoardRoute from "./routes/dashboard.route.js";
 import dishRoute from "./routes/dish.route.js";
 import employeeRoute from "./routes/employee.route.js";
 import feedbackRoute from "./routes/feedback.controller.js";
@@ -21,7 +22,6 @@ import reservationRoute from "./routes/Reservation.route.js";
 import setComboRoute from "./routes/setCombo.route.js";
 import tableRoute from "./routes/table.route.js";
 import userRoutes from "./routes/user.route.js";
-import dashBoardRoute from "./routes/dashboard.route.js";
 
 // .env
 dotenv.config();
@@ -61,7 +61,7 @@ app.use("/api", orderedFoodRoute);
 // orderedCombo route
 app.use("/api", orderedComboRoute);
 // bill route
-app.use("/api", billRoute);
+app.use("/api", billRoute(io));
 // setCombo route
 app.use(setComboRoute);
 // message route

@@ -2,6 +2,7 @@ import Bill from "../models/bill.js";
 import BillCombo from "../models/billCombo.js";
 import BillDetail from "../models/billDetail.js";
 import BillDish from "../models/billDish.js";
+import notifications from "../models/notifications.js";
 import Reservation from "../models/reservation.js";
 import Table from "../models/table.js";
 import ReservationController from "./reservation.controller.js";
@@ -9,6 +10,9 @@ import ReservationController from "./reservation.controller.js";
 const reservationController = new ReservationController();
 
 class BillController {
+  constructor(io) {
+    this.io = io;
+  }
   // Get all bill
   getAll = async (req, res) => {
     try {
@@ -63,7 +67,7 @@ class BillController {
       const newBill = await Bill.create({
         reservation_id,
         original_money,
-        status: "ISNOTPAID",
+        status: "ISPAID",
       });
       if (!newBill) {
         return res.status(404).json({ message: "newBill isn't created" });
@@ -154,17 +158,103 @@ class BillController {
       return res.status(501).json({ message: "Server Error" });
     }
   };
+
+  createBillBank = async (reservation_id, original_money) => {
+    try {
+      const reservation = await reservationController.getDetail(reservation_id);
+      if (!reservation) {
+        throw new Error("Reservation not found");
+      }
+
+      const newBill = await Bill.create({
+        reservation_id,
+        original_money,
+        status: "ISPAID",
+      });
+      if (!newBill) {
+        throw new Error("New bill isn't created");
+      }
+
+      const billDetail = new BillDetail({ bill_id: newBill._id });
+
+      for (const ordered_dish of reservation.ordered_dishes) {
+        const billDish = await BillDish.create({
+          name: ordered_dish.dish_id.name,
+          price: ordered_dish.dish_id.price,
+          images: ordered_dish.dish_id.images,
+          desc: ordered_dish.dish_id.desc,
+          quantity: ordered_dish.quantity,
+        });
+        billDetail.orderedDishes.push(billDish._doc._id);
+      }
+
+      for (const ordered_combos of reservation.ordered_combos) {
+        const billCombo = await BillCombo.create({
+          name: ordered_combos.setComboProduct_id.combo_id.name,
+          price: ordered_combos.setComboProduct_id.combo_id.price,
+          images: ordered_combos.setComboProduct_id.combo_id.images,
+          desc: ordered_combos.setComboProduct_id.combo_id.desc,
+          quantity: ordered_combos.quantity,
+        });
+        billDetail.orderedCombos.push(billCombo._doc._id);
+      }
+
+      const newBillDetail = await billDetail.save();
+      if (!newBillDetail) {
+        throw new Error("New bill detail isn't created");
+      }
+
+      await Bill.findByIdAndUpdate(newBill._id, { billDetail_id: newBillDetail._doc._id });
+      await Reservation.findByIdAndUpdate(reservation._id, { status: "COMPLETED" });
+      await Table.findByIdAndUpdate(reservation.table_id, { status: "AVAILABLE" });
+      this.io.emit("bank-payment-success");
+      return {
+        message: "Bill created successfully",
+        bill_id: newBill._id,
+      };
+    } catch (error) {
+      console.error("Error in createBillBank:", error);
+      throw error;
+    }
+  };
+
   payment = async (req, res) => {
     try {
-      console.log(body);
+      if (!req?.body?.content) {
+        return res.status(400).send("Invalid content in response body");
+      }
 
-      const { bill_id } = req.params;
-      const bill = await Bill.findByIdAndUpdate(bill_id, { status: "ISPAID" });
-      if (!bill) return res.status(404).json({ message: "Bill not found" });
-      return res.status(200).json({ message: "Payment successful" });
+      const hihi = req.body.content.match(/HDTTGOLDENFORK([a-f0-9]+)/i);
+      if (!hihi) {
+        return res.status(400).send("Transaction code not found in content");
+      }
+
+      const transactionCode = hihi[1];
+      const transferAmount = req?.body?.transferAmount;
+
+      if (!transferAmount) {
+        return res.status(400).send("Transfer amount not found");
+      }
+      // Gọi hàm createBillBank
+      await this.createBillBank(transactionCode, transferAmount, req);
+
+      // Create a new notification
+      const notification = new notifications({
+        title: "Thanh toán thành công",
+        message: `Đơn đặt bàn ${transactionCode} đã được thanh toán thành công.`,
+      });
+      // Save the notification
+      await notification.save();
+      // Emit a new notification via WebSocket
+      this.io.emit("new-notification", {
+        title: notification.title,
+        message: notification.message,
+      });
+
+      res.status(200).send("Payment processed successfully");
     } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Server error" });
+      console.error("Error processing payment:", error);
+      res.status(500).send("Internal server error");
     }
   };
 }
