@@ -1,11 +1,11 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
 const billSchame = new mongoose.Schema(
   {
     reservation_id: {
       type: mongoose.Schema.ObjectId,
       ref: "reservation",
-      required: true
+      required: true,
     },
     billDetail_id: {
       type: mongoose.Schema.ObjectId,
@@ -13,11 +13,11 @@ const billSchame = new mongoose.Schema(
     },
     original_money: {
       type: Number,
-      required: true
+      required: true,
     },
     VAT: {
       type: Number,
-      default: 5
+      default: 5,
       // Tính theo phần trăm
     },
     total_money: {
@@ -30,12 +30,12 @@ const billSchame = new mongoose.Schema(
     },
     discount: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   {
     timestamps: true,
   }
-)
+);
 
-export default mongoose.models.bill || mongoose.model("bill", billSchame)
+export default mongoose.models.bill || mongoose.model("bill", billSchame);

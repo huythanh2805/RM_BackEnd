@@ -56,28 +56,21 @@ class BillController {
   createBill = async (req, res) => {
     try {
       const { reservation_id, original_money } = req.body;
-
-      // Kiểm tra reservation có tồn tại không
       const reservation = await reservationController.getDetail(reservation_id);
       if (!reservation) {
         return res.status(404).json({ message: "Reservation not found" });
       }
-      // Tạo bill mới
       const newBill = await Bill.create({
         reservation_id,
         original_money,
-        status: "ISPAID",
+        status: "ISNOTPAID",
       });
       if (!newBill) {
         return res.status(404).json({ message: "newBill isn't created" });
       }
-
-      // Tạo billDetail
       const billDetail = new BillDetail({
         bill_id: newBill._id,
       });
-
-      // Tạo mới billDish và insert vào billDetail
       for (const ordered_dish of reservation.ordered_dishes) {
         const billDish = await BillDish.create({
           name: ordered_dish.dish_id.name,
@@ -107,14 +100,12 @@ class BillController {
       if (!newBillDetail) {
         return res.status(404).json({ message: "newBillDetail isn't created" });
       }
-      // set lại trạng thái cho reservation và table
       await Reservation.findByIdAndUpdate(reservation._id, {
         status: "COMPLETED",
       });
       await Table.findByIdAndUpdate(reservation.table_id, {
         status: "AVAILABLE",
       });
-      // Trả về kết quả thành công
       return res.status(201).json({
         message: "Bill created successfully",
         bill_id: newBill._id,
@@ -157,15 +148,23 @@ class BillController {
     const { id } = req.params;
     try {
       const bill = await this.getDetail(id);
-      if (!bill)
-        return res
-          .status(401)
-          .json({ message: "Can't find any bill with the same id" });
-      return res
-        .status(201)
-        .json({ message: "Can't find any bill with the same id", bill });
+      if (!bill) return res.status(401).json({ message: "Can't find any bill with the same id" });
+      return res.status(201).json({ message: "Can't find any bill with the same id", bill });
     } catch (error) {
       return res.status(501).json({ message: "Server Error" });
+    }
+  };
+  payment = async (req, res) => {
+    try {
+      console.log(body);
+
+      const { bill_id } = req.params;
+      const bill = await Bill.findByIdAndUpdate(bill_id, { status: "ISPAID" });
+      if (!bill) return res.status(404).json({ message: "Bill not found" });
+      return res.status(200).json({ message: "Payment successful" });
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Server error" });
     }
   };
 }
