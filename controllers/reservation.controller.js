@@ -95,7 +95,6 @@ class ReservationController {
       return res.status(500).json({ message: "Đã xảy ra lỗi trong quá trình hủy đơn hàng." });
     }
   }
-
   // Get detail reservation by table status
   getReserDetailByTableId = async (req, res) => {
     const { table_id } = req.params;
@@ -197,7 +196,6 @@ class ReservationController {
       return res.status(500).json({ message: "Internal Server Error" });
     }
   };
-
   // add new reservation client
   createClientReservation = async (req, res) => {
     const { startTime, dishs, user_id, guests_count, phoneNumber, userName } = req.body;
@@ -252,7 +250,6 @@ class ReservationController {
       return res.status(500).json({ message: "Internal Server Error" });
     }
   };
-
   // Delete reservation by Array Id
   deleteReservationByIdArray = async (req, res) => {
     const { IdArray: ArrayId } = req.body; // Lấy ArrayId từ body của request
