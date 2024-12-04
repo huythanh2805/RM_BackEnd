@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const discountSchame = new mongoose.Schema({
+const userDiscountSchame = new mongoose.Schema({
     code: {
         type: String,
         unique: true,
@@ -28,4 +28,4 @@ const discountSchame = new mongoose.Schema({
 }
 )
 
-export default mongoose.models.discount || mongoose.model("discount", discountSchame)
+export default mongoose.models.userDiscount || mongoose.model("userDiscount", userDiscountSchame)

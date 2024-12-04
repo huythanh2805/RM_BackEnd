@@ -23,6 +23,7 @@ import tableRoute from "./routes/table.route.js";
 import userRoutes from "./routes/user.route.js";
 import dashBoardRoute from "./routes/dashboard.route.js";
 import discountRoute from "./routes/discount.route.js";
+import userDiscountRoute from "./routes/userDiscount.route.js";
 
 // .env
 dotenv.config();
@@ -75,6 +76,8 @@ app.use("/api", dashBoardRoute);
 app.use("/api", notificationRoute);
 // discount route
 app.use("/api", discountRoute);
+// user discount route
+app.use("/api", userDiscountRoute);
 
 app.use(feedbackRoute);
 
