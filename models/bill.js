@@ -23,14 +23,16 @@ const billSchame = new mongoose.Schema(
     total_money: {
       type: Number,
     },
+    discount_money: {
+      type: Number,
+    },
+    VAT_money: {
+      type: Number,
+    },
     status: {
       type: String,
       enum: ["ISNOTPAID", "ISPAID"],
       default: "ISNOTPAID",
-    },
-    discount: {
-      type: Boolean,
-      default: false,
     },
   },
   {
