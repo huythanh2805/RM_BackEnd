@@ -9,12 +9,13 @@ import { fileURLToPath } from "url";
 import billRoute from "./routes/bill.route.js";
 import categoryRoute from "./routes/category.route.js";
 import conversationRoute from "./routes/conversation.route.js";
+import dashBoardRoute from "./routes/dashboard.route.js";
 import dishRoute from "./routes/dish.route.js";
 import employeeRoute from "./routes/employee.route.js";
 import feedbackRoute from "./routes/feedback.controller.js";
 import locationRoute from "./routes/location.route.js";
 import messageRoute from "./routes/message.route.js";
-import notificationRoute from "./routes/notification.route.js"; // Giả sử bạn có route Notification
+import notificationRoute from "./routes/notification.route.js"; 
 import orderedComboRoute from "./routes/orderedCombo.route.js";
 import orderedFoodRoute from "./routes/orderedFood.route.js";
 import reservationRoute from "./routes/Reservation.route.js";
@@ -24,6 +25,7 @@ import userRoutes from "./routes/user.route.js";
 import dashBoardRoute from "./routes/dashboard.route.js";
 import discountRoute from "./routes/discount.route.js";
 import userDiscountRoute from "./routes/userDiscount.route.js";
+import { startCronJob } from "./controllers/cron.controller.js";
 
 // .env
 dotenv.config();
@@ -63,7 +65,7 @@ app.use("/api", orderedFoodRoute);
 // orderedCombo route
 app.use("/api", orderedComboRoute);
 // bill route
-app.use("/api", billRoute);
+app.use("/api", billRoute(io));
 // setCombo route
 app.use(setComboRoute);
 // message route
@@ -81,6 +83,8 @@ app.use("/api", userDiscountRoute);
 
 app.use(feedbackRoute);
 
+//cron
+startCronJob();
 // Socket
 
 io.on("connection", (socket) => {
