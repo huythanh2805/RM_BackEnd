@@ -22,6 +22,9 @@ import reservationRoute from "./routes/Reservation.route.js";
 import setComboRoute from "./routes/setCombo.route.js";
 import tableRoute from "./routes/table.route.js";
 import userRoutes from "./routes/user.route.js";
+import dashBoardRoute from "./routes/dashboard.route.js";
+import discountRoute from "./routes/discount.route.js";
+import userDiscountRoute from "./routes/userDiscount.route.js";
 import { startCronJob } from "./controllers/cron.controller.js";
 
 // .env
@@ -73,6 +76,10 @@ app.use("/api", conversationRoute);
 app.use("/api", dashBoardRoute);
 // feedback route
 app.use("/api", notificationRoute);
+// discount route
+app.use("/api", discountRoute);
+// user discount route
+app.use("/api", userDiscountRoute);
 
 app.use(feedbackRoute);
 
@@ -92,12 +99,10 @@ io.on("connection", (socket) => {
   });
   // Lắng nghe sự kiện vào phòng
   socket.on("joinRoom", (roomId) => {
-    console.log("joinRoom", roomId);
     socket.join(roomId);
 
     // Kiểm tra xem có bao nhiêu người join room
     const numClients = io.sockets.adapter.rooms.get(roomId)?.size || 0;
-    console.log(`Số người trong phòng ${roomId} là: ${numClients}`);
   });
   // Lắng nghe sự kiện tạo 1 conversation
   socket.on("createConversation", (data) => {
@@ -105,7 +110,6 @@ io.on("connection", (socket) => {
   });
   // Xử lý khi người dùng ngắt kết nối
   socket.on("disconnect", () => {
-    console.log(`User disconnected: ${socket.id}`);
   });
 });
 

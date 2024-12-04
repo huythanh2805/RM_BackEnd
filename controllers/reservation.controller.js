@@ -198,7 +198,7 @@ class ReservationController {
   };
   // add new reservation client
   createClientReservation = async (req, res) => {
-    const { startTime, dishs, user_id, guests_count, phoneNumber, userName } = req.body;
+    const { startTime, dishs, user_id, guests_count, phoneNumber, userName, couponValue } = req.body;
     try {
       if (!req.body) return res.status(401).json({ message: "All data are required" });
 
@@ -210,6 +210,7 @@ class ReservationController {
         startTime,
         status: "ISWAITING",
         phoneNumber,
+        userDiscountId: couponValue
       });
 
       if (!newReservation) return res.status(401).json({ message: "Can't Create new order" });

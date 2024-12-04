@@ -35,6 +35,10 @@ const reservationSchame = new mongoose.Schema(
         ref: "orderedCombo",
       },
     ],
+    userDiscountId: {
+        type: mongoose.Schema.ObjectId,
+        ref: "userDiscount",
+      },
     status: {
       type: String,
       enum: ["ISWAITING", "ISCOMFIRMED", "SEATED", "COMPLETED", "CANCELED"],

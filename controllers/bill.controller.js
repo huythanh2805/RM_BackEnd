@@ -6,6 +6,7 @@ import notifications from "../models/notifications.js";
 import Reservation from "../models/reservation.js";
 import Table from "../models/table.js";
 import ReservationController from "./reservation.controller.js";
+import UserDiscount from "../models/userDiscount.js";
 
 const reservationController = new ReservationController();
 
@@ -59,7 +60,9 @@ class BillController {
   // Create new bill
   createBill = async (req, res) => {
     try {
-      const { reservation_id, original_money } = req.body;
+      const { reservation_id, original_money, userDiscountId, total_money } = req.body;
+
+      // Kiểm tra reservation có tồn tại không
       const reservation = await reservationController.getDetail(reservation_id);
       if (!reservation) {
         return res.status(404).json({ message: "Reservation not found" });
@@ -67,6 +70,7 @@ class BillController {
       const newBill = await Bill.create({
         reservation_id,
         original_money,
+        total_money,
         status: "ISPAID",
       });
       if (!newBill) {
@@ -110,6 +114,9 @@ class BillController {
       await Table.findByIdAndUpdate(reservation.table_id, {
         status: "AVAILABLE",
       });
+      // Sửa lại userDiscount thành đã dùng
+      await UserDiscount.findByIdAndUpdate(userDiscountId, {status: "USED"})
+      // Trả về kết quả thành công
       return res.status(201).json({
         message: "Bill created successfully",
         bill_id: newBill._id,
