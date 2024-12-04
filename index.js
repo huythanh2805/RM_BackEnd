@@ -95,12 +95,10 @@ io.on("connection", (socket) => {
   });
   // Lắng nghe sự kiện vào phòng
   socket.on("joinRoom", (roomId) => {
-    console.log("joinRoom", roomId);
     socket.join(roomId);
 
     // Kiểm tra xem có bao nhiêu người join room
     const numClients = io.sockets.adapter.rooms.get(roomId)?.size || 0;
-    console.log(`Số người trong phòng ${roomId} là: ${numClients}`);
   });
   // Lắng nghe sự kiện tạo 1 conversation
   socket.on("createConversation", (data) => {
@@ -108,7 +106,6 @@ io.on("connection", (socket) => {
   });
   // Xử lý khi người dùng ngắt kết nối
   socket.on("disconnect", () => {
-    console.log(`User disconnected: ${socket.id}`);
   });
 });
 
