@@ -36,9 +36,13 @@ const reservationSchame = new mongoose.Schema(
       },
     ],
     userDiscountId: {
-        type: mongoose.Schema.ObjectId,
-        ref: "userDiscount",
-      },
+      type: mongoose.Schema.ObjectId,
+      ref: "userDiscount",
+    },
+    deposit: {
+      type: Number,
+      default: 0,
+    },
     status: {
       type: String,
       enum: ["ISWAITING", "ISCOMFIRMED", "SEATED", "COMPLETED", "CANCELED"],

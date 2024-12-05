@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { sendEmailConfirmedStatus } from "../configs/transporter.js";
 import notifications from "../models/notifications.js";
 import OrderdCombo from "../models/orderedCombo.js";
@@ -66,7 +67,7 @@ class ReservationController {
       return res.status(500).json({ message: "Server error" });
     }
   };
-   cancelReservationById = async (req, res) => {
+  cancelReservationById = async (req, res) => {
     try {
       const { reservation_id } = req.params;
       const reservation = await Reservation.findByIdAndUpdate(reservation_id, { status: "CANCELED" }, { new: true });
@@ -94,7 +95,7 @@ class ReservationController {
       console.error(error);
       return res.status(500).json({ message: "Đã xảy ra lỗi trong quá trình hủy đơn hàng." });
     }
-  }
+  };
   // Get detail reservation by table status
   getReserDetailByTableId = async (req, res) => {
     const { table_id } = req.params;
@@ -198,7 +199,7 @@ class ReservationController {
   };
   // add new reservation client
   createClientReservation = async (req, res) => {
-    const { startTime, dishs, user_id, guests_count, phoneNumber, userName, couponValue } = req.body;
+    const { startTime, dishs, user_id, guests_count, phoneNumber, userName, couponValue, deposit } = req.body;
     try {
       if (!req.body) return res.status(401).json({ message: "All data are required" });
 
@@ -210,7 +211,8 @@ class ReservationController {
         startTime,
         status: "ISWAITING",
         phoneNumber,
-        userDiscountId: couponValue
+        userDiscountId: couponValue || null,
+        deposit,
       });
 
       if (!newReservation) return res.status(401).json({ message: "Can't Create new order" });
@@ -366,6 +368,54 @@ class ReservationController {
     } catch (error) {
       console.log("Inventories_Error", error);
       return res.status(500).json({ message: "Internal Server Error" });
+    }
+  };
+  getReservation = async (userId, phoneNumber, guestsCount) => {
+    const userIdObject = mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId) : null;
+
+    try {
+      const reservations = await Reservation.find({
+        user_id: userIdObject,
+        phoneNumber: phoneNumber,
+        guests_count: guestsCount,
+      });
+
+      if (reservations.length === 0) {
+        return null; // Trả về null nếu không tìm thấy đơn đặt bàn
+      }
+      return reservations[0]; // Trả về đơn đặt bàn đầu tiên nếu tìm thấy
+    } catch (error) {
+      console.error("GetReservation_Error", error);
+      throw new Error("Lỗi trong quá trình tìm kiếm đơn đặt bàn."); // Ném lỗi để xử lý bên ngoài
+    }
+  };
+
+  checkout = async (req, res) => {
+    try {
+      const content = req.body.content;
+      const parts = content.trim().split(/\s+/);
+
+      const phoneNumber = parts[1];
+      const userId = parts[2];
+      const guestsCount = parseInt(parts[3], 10);
+      console.log("Guests Count: " + guestsCount, phoneNumber, userId);
+      const coc = req.body.transferAmount;
+      const reservation = await this.getReservation(userId, phoneNumber, guestsCount);
+
+      if (!reservation) {
+        return res.status(404).json({ message: "Không tìm thấy đơn đặt bàn phù hợp." });
+      }
+
+      reservation.deposit = coc; // Giả sử thuộc tính `coc` tồn tại trong đối tượng `reservation`
+
+      // Lưu lại thay đổi vào cơ sở dữ liệu
+      await reservation.save();
+
+      // Trả về kết quả thành công
+      return res.status(200).json({ message: "Thanh toán và đặt bàn thành công!" });
+    } catch (error) {
+      console.error("Checkout_Error", error);
+      return res.status(500).json({ message: "Lỗi trong quá trình thanh toán và tạo đơn đặt bàn." });
     }
   };
 }
