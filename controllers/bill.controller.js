@@ -5,8 +5,8 @@ import BillDish from "../models/billDish.js";
 import notifications from "../models/notifications.js";
 import Reservation from "../models/reservation.js";
 import Table from "../models/table.js";
-import ReservationController from "./reservation.controller.js";
 import UserDiscount from "../models/userDiscount.js";
+import ReservationController from "./reservation.controller.js";
 
 const reservationController = new ReservationController();
 
@@ -112,15 +112,14 @@ class BillController {
       }
       await Reservation.findByIdAndUpdate(reservation._id, {
         status: "COMPLETED",
-        userDiscountId: userDiscountId
+        userDiscountId: userDiscountId,
       });
       await Table.findByIdAndUpdate(reservation.table_id, {
         status: "AVAILABLE",
       });
       // Sửa lại userDiscount thành đã dùng
-      if(userDiscountId){
-        await UserDiscount.findByIdAndUpdate(userDiscountId, {status: "USED"})
-
+      if (userDiscountId) {
+        await UserDiscount.findByIdAndUpdate(userDiscountId, { status: "USED" });
       }
       // Trả về kết quả thành công
       return res.status(201).json({

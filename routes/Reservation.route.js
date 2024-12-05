@@ -10,7 +10,7 @@ const reservationRoute = (io) => {
   router.get("/reservations/user/:userId", reservationController.getReservationsByUser);
   router.get("/reservations/history-detail/:reservation_id", reservationController.getReserDetailById);
   router.put("/reservations/cancel/:reservation_id", reservationController.cancelReservationById);
-
+  router.post("/webhook/seepay/reservation", reservationController.checkout);
   router.get("/reservations", reservationController.getAllReser);
   router.get("/reservations/:reservation_id", reservationController.getReserDetailById);
   router.post("/reservations", reservationController.createAdminReservation);
