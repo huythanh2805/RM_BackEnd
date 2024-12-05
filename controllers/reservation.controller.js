@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { sendEmailConfirmedStatus } from "../configs/transporter.js";
 import notifications from "../models/notifications.js";
 import OrderdCombo from "../models/orderedCombo.js";
@@ -137,6 +136,7 @@ class ReservationController {
     const { table_id, userName, guests_count, payment_method, startTime, detailAddress, phoneNumber, orderedFoods } =
       req.body;
     try {
+      const reservationCode = `MD${Math.floor(100000 + Math.random() * 900000)}`;
       if (!req.body) return res.status(401).json({ message: "All data are required" });
       // 4: create reservation
       const newReservation = await Reservation.create({
@@ -148,6 +148,8 @@ class ReservationController {
         startTime,
         status: "SEATED",
         phoneNumber,
+        code: reservationCode,
+        isPayment: true,
       });
       // 5: push orderedDish _id or orderedCombo _id into reservation
       // Tạo mới billDish và insert vào billDetail
@@ -199,13 +201,25 @@ class ReservationController {
   };
   // add new reservation client
   createClientReservation = async (req, res) => {
-    const { startTime, dishs, user_id, guests_count, phoneNumber, userName, couponValue, deposit } = req.body;
+    const {
+      startTime,
+      dishs,
+      user_id,
+      guests_count,
+      phoneNumber,
+      userName,
+      couponValue,
+      deposit,
+      code,
+      isPayment,
+      status,
+    } = req.body;
     try {
       if (!req.body) return res.status(401).json({ message: "All data are required" });
-
       // Tạo đặt chỗ
       const newReservation = await Reservation.create({
         user_id,
+        code,
         userName,
         guests_count,
         startTime,
@@ -213,6 +227,8 @@ class ReservationController {
         phoneNumber,
         userDiscountId: couponValue || null,
         deposit,
+        isPayment,
+        status,
       });
 
       if (!newReservation) return res.status(401).json({ message: "Can't Create new order" });
@@ -247,7 +263,7 @@ class ReservationController {
         message: notification.message,
       });
 
-      return res.status(201).json({ message: "Successfully!" });
+      return res.status(201).json({ message: "Đặt bàn thành công!" });
     } catch (error) {
       console.error("Inventories_Error", error);
       return res.status(500).json({ message: "Internal Server Error" });
@@ -370,20 +386,15 @@ class ReservationController {
       return res.status(500).json({ message: "Internal Server Error" });
     }
   };
-  getReservation = async (userId, phoneNumber, guestsCount) => {
-    const userIdObject = mongoose.Types.ObjectId.isValid(userId) ? new mongoose.Types.ObjectId(userId) : null;
-
+  getReservation = async (code) => {
     try {
       const reservations = await Reservation.find({
-        user_id: userIdObject,
-        phoneNumber: phoneNumber,
-        guests_count: guestsCount,
+        code,
       });
-
       if (reservations.length === 0) {
-        return null; // Trả về null nếu không tìm thấy đơn đặt bàn
+        return null;
       }
-      return reservations[0]; // Trả về đơn đặt bàn đầu tiên nếu tìm thấy
+      return reservations[0];
     } catch (error) {
       console.error("GetReservation_Error", error);
       throw new Error("Lỗi trong quá trình tìm kiếm đơn đặt bàn."); // Ném lỗi để xử lý bên ngoài
@@ -394,23 +405,35 @@ class ReservationController {
     try {
       const content = req.body.content;
       const parts = content.trim().split(/\s+/);
-
-      const phoneNumber = parts[1];
-      const userId = parts[2];
-      const guestsCount = parseInt(parts[3], 10);
-      console.log("Guests Count: " + guestsCount, phoneNumber, userId);
+      let codeOrder = parts[1];
+      if (codeOrder.includes("-")) {
+        codeOrder = codeOrder.split("-")[0];
+      }
+      console.log("Guests Count: ", codeOrder);
       const coc = req.body.transferAmount;
-      const reservation = await this.getReservation(userId, phoneNumber, guestsCount);
+      const reservation = await this.getReservation(codeOrder);
 
       if (!reservation) {
         return res.status(404).json({ message: "Không tìm thấy đơn đặt bàn phù hợp." });
       }
 
-      reservation.deposit = coc; // Giả sử thuộc tính `coc` tồn tại trong đối tượng `reservation`
-
+      reservation.deposit = coc;
+      reservation.isPayment = true;
+      reservation.status = "ISWAITING";
       // Lưu lại thay đổi vào cơ sở dữ liệu
       await reservation.save();
+      const notification = new notifications({
+        title: "Chuyển tiền cọc đơn hàng",
+        message: `Đơn hàng ${reservation.code} đã đặt cọc. Vui lòng xác nhận.`,
+      });
 
+      await notification.save();
+
+      // Phát sự kiện qua WebSocket
+      this.io.emit("notification", {
+        title: notification.title,
+        message: notification.message,
+      });
       // Trả về kết quả thành công
       return res.status(200).json({ message: "Thanh toán và đặt bàn thành công!" });
     } catch (error) {
