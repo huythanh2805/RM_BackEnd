@@ -26,7 +26,7 @@ const billSchame = new mongoose.Schema(
     discount_money: {
       type: Number,
     },
-    VAT_money: {
+    deposit_money: {
       type: Number,
     },
     status: {
