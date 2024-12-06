@@ -51,6 +51,7 @@ class ReservationController {
   getReserDetailById = async (req, res) => {
     try {
       const { reservation_id } = req.params;
+      console.log("Received reservation_id:", reservation_id);
 
       // Tìm reservation theo ID và populate các trường liên quan
       const reservation = await this.getDetail(reservation_id);
@@ -405,22 +406,17 @@ class ReservationController {
     try {
       const content = req.body.content;
       const parts = content.trim().split(/\s+/);
-      let codeOrder = parts[1];
-      if (codeOrder.includes("-")) {
-        codeOrder = codeOrder.split("-")[0];
-      }
-      console.log("Guests Count: ", codeOrder);
+      let codeOrder = parts[0];
       const coc = req.body.transferAmount;
       const reservation = await this.getReservation(codeOrder);
 
       if (!reservation) {
         return res.status(404).json({ message: "Không tìm thấy đơn đặt bàn phù hợp." });
       }
-
       reservation.deposit = coc;
       reservation.isPayment = true;
       reservation.status = "ISWAITING";
-      // Lưu lại thay đổi vào cơ sở dữ liệu
+
       await reservation.save();
       const notification = new notifications({
         title: "Chuyển tiền cọc đơn hàng",

@@ -60,7 +60,7 @@ class BillController {
   // Create new bill
   createBill = async (req, res) => {
     try {
-      const { reservation_id, original_money, userDiscountId, total_money, discount_money, VAT_money } = req.body;
+      const { reservation_id, original_money, total_money, discount_money, deposit_money, userDiscountId } = req.body;
 
       // Kiểm tra reservation có tồn tại không
       const reservation = await reservationController.getDetail(reservation_id);
@@ -72,7 +72,8 @@ class BillController {
         original_money,
         total_money,
         discount_money,
-        VAT_money,
+        deposit_money,
+        userDiscountId,
         status: "ISPAID",
       });
       if (!newBill) {
@@ -171,7 +172,7 @@ class BillController {
     }
   };
 
-  createBillBank = async (reservation_id, original_money) => {
+  createBillBank = async (reservation_id, total_money, original_money, discount_money, deposit_money) => {
     try {
       const reservation = await reservationController.getDetail(reservation_id);
       if (!reservation) {
@@ -180,6 +181,9 @@ class BillController {
 
       const newBill = await Bill.create({
         reservation_id,
+        total_money,
+        discount_money,
+        deposit_money,
         original_money,
         status: "ISPAID",
       });
@@ -235,30 +239,30 @@ class BillController {
       if (!req?.body?.content) {
         return res.status(400).send("Invalid content in response body");
       }
-
-      const hihi = req.body.content.match(/HDTTGOLDENFORK([a-f0-9]+)/i);
+      console.log(req.body.content);
+      const hihi = req.body.content.trim().split(/\s+/);
       if (!hihi) {
         return res.status(400).send("Transaction code not found in content");
       }
+      const transactionCode = hihi[0];
+      const original_money = hihi[1];
+      const discount_money = hihi[2];
+      const depositMoney = hihi[3];
 
-      const transactionCode = hihi[1];
       const transferAmount = req?.body?.transferAmount;
-
       if (!transferAmount) {
         return res.status(400).send("Transfer amount not found");
       }
-      // Gọi hàm createBillBank
-      await this.createBillBank(transactionCode, transferAmount, req);
-
+      await this.createBillBank(transactionCode, transferAmount, original_money, discount_money, depositMoney);
       // Create a new notification
       const notification = new notifications({
         title: "Thanh toán thành công",
         message: `Đơn đặt bàn ${transactionCode} đã được thanh toán thành công.`,
       });
-      // Save the notification
+
       await notification.save();
-      // Emit a new notification via WebSocket
-      this.io.emit("new-notification", {
+
+      this.io.emit("bank-payment-success", {
         title: notification.title,
         message: notification.message,
       });
