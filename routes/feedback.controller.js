@@ -8,6 +8,7 @@ const feedbackController = new FeedbackController();
 router.get("/feedbacks", feedbackController.getAllFeedback);
 router.get("/feedbacks/dish/:id", feedbackController.getFeedbackByDishId);
 router.post("/feedbacks", feedbackController.createFeedback);
+router.put("/feedbacks/:id", feedbackController.updateFeedback);
 router.delete("/feedbacks/:id", feedbackController.deleteFeedback);
 
 export default router;
