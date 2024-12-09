@@ -11,7 +11,7 @@ import categoryRoute from "./routes/category.route.js";
 import conversationRoute from "./routes/conversation.route.js";
 import dishRoute from "./routes/dish.route.js";
 import employeeRoute from "./routes/employee.route.js";
-import feedbackRoute from "./routes/feedback.controller.js";
+import feedbackRoute from "./routes/feedback.route.js";
 import locationRoute from "./routes/location.route.js";
 import messageRoute from "./routes/message.route.js";
 import notificationRoute from "./routes/notification.route.js"; 
