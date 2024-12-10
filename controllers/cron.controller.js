@@ -6,7 +6,7 @@ export const cancelPastReservations = async () => {
     const now = new Date();
     const expiredReservations = await Reservation.find({
       startTime: { $lt: now },
-      status: { $in: ["ISWAITING", "ISCOMFIRMED"] },
+      status: { $in: ["ISWAITING", "ISCOMFIRMED", "ISPAYMENT"] },
     });
     for (const Reservation of expiredReservations) {
       Reservation.status = "CANCELED";
