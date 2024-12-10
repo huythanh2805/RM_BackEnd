@@ -1,4 +1,5 @@
 import Discount from "../models/discount.js";
+import userDiscount from "../models/userDiscount.js";
 
 const createDiscount = async (req, res) => {
   try {
@@ -58,7 +59,69 @@ const getAllDiscounts = async (req, res) => {
       res.status(500).json({ message: "Server error", error: error.message });
     }
   };
+const deleteDiscountById = async (req, res) => {
+  const {id} = req.params
+    try {
+      // Lấy tất cả các phiếu giảm giá, sắp xếp từ mới nhất đến cũ nhất
+      const discounts = await Discount.findByIdAndDelete(id)
+  
+      // Trả về danh sách
+      res.status(200).json({message: "Delete Sucessfully"});
+    } catch (error) {
+      // Xử lý lỗi
+      console.error("Error delete discounts:", error);
+      res.status(500).json({ message: "Server error", error: error.message });
+    }
+  };
+const getDiscountById = async (req, res) => {
+  const {id} = req.params
+    try {
+      // Lấy tất cả các phiếu giảm giá, sắp xếp từ mới nhất đến cũ nhất
+      const discount = await Discount.findById(id)
+  
+      // Trả về danh sách
+      res.status(200).json(discount);
+    } catch (error) {
+      // Xử lý lỗi
+      console.error("Error getDetail discount discounts:", error);
+      res.status(500).json({ message: "Server error", error: error.message });
+    }
+  };
+const updateDiscountById = async (req, res) => {
+  const {id} = req.params
+  const body = req.body
+    try {
+      const discount = await Discount.findById(id)
+      if(!discount) return res.status(200).json({message: "Không thể tìm thấy mã"});
+      // Lấy tất cả các phiếu giảm giá, sắp xếp từ mới nhất đến cũ nhất
+      const newRemainingQuantity = body.totalQuantity
+      const newId = discount._doc._id
+      const discounts = await Discount.findByIdAndUpdate(id,{...body,remainingQuantity: newRemainingQuantity, _id: newId })
+  
+      // Trả về danh sách
+     return res.status(200).json({message: "Update Sucessfully"});
+    } catch (error) {
+      // Xử lý lỗi
+      console.error("Error update discounts:", error);
+      res.status(500).json({ message: "Server error", error: error.message });
+    }
+  };
+const deleteAll = async (req, res) => {
+    try {
+      await Discount.deleteMany({})
+      await userDiscount.deleteMany({})
+     return res.status(200).json({message: "Update Sucessfully"});
+    } catch (error) {
+      // Xử lý lỗi
+      console.error("Error update discounts:", error);
+      res.status(500).json({ message: "Server error", error: error.message });
+    }
+  };
 export {
     createDiscount,
-    getAllDiscounts
+    getAllDiscounts,
+    deleteDiscountById,
+    updateDiscountById,
+    getDiscountById,
+    deleteAll
 }
