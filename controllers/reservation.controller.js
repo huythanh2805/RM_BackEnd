@@ -4,6 +4,7 @@ import OrderdCombo from "../models/orderedCombo.js";
 import OrderedDish from "../models/orderedDish.js";
 import Reservation from "../models/reservation.js";
 import Table from "../models/table.js";
+import UserDiscount from "../models/userDiscount.js";
 
 class ReservationController {
   constructor(io) {
@@ -217,6 +218,14 @@ class ReservationController {
     } = req.body;
     try {
       if (!req.body) return res.status(401).json({ message: "All data are required" });
+
+      const userDiscount = await UserDiscount.findById(couponValue).populate('discountId')
+      if(!userDiscount){
+        return res.status(401).json({ message: "Không tìm thấy mã giảm giá" });
+      }
+      if(!userDiscount.discountId.isActive){
+        return res.status(401).json({ message: "Mã giảm giá không còn hoạt động nữa" });
+      }
       // Tạo đặt chỗ
       const newReservation = await Reservation.create({
         user_id,
@@ -233,7 +242,8 @@ class ReservationController {
       });
 
       if (!newReservation) return res.status(401).json({ message: "Can't Create new order" });
-
+      // Cập nhật trạn thái của mã giảm giá
+       await UserDiscount.findByIdAndUpdate(couponValue, {status: "USED"})
       // Tạo mảng món ăn
       const orderedDishes = dishs.map((dish) => ({
         dish_id: dish.dish_id,
