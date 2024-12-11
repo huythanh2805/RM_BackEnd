@@ -4,7 +4,7 @@ import { createUserDiscount, GetAllAvailableDiscount, getAllUserDiscount, getUse
 const router = express.Router();
 
 router.get("/userDiscount/reservation/client/getAvailableStatus/:userId", GetAllAvailableDiscount);
-router.get("/userDiscount/reservation/admin/:code/:totalPrice", getUserDiscountByCode);
+router.get("/userDiscount/reservation/admin/:code/:totalPrice/:reservationId", getUserDiscountByCode);
 router.get("/userDiscount/reservation/:reservationId", getUserDiscountByReservationId);
 router.post("/userDiscount", createUserDiscount);
 router.get("/userDiscount/:userId", getAllUserDiscount);

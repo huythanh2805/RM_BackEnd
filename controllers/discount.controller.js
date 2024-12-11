@@ -12,10 +12,11 @@ const createDiscount = async (req, res) => {
       totalQuantity,
       userId,
     } = req.body;
-
+   
+    console.log(req.body)
     // Kiểm tra dữ liệu đầu vào (có thể dùng thư viện như Zod hoặc Joi nếu muốn thêm validation nâng cao)
-    if (!discountType || !discountValue || !expireDate || !minOrderValue || !totalQuantity || !userId) {
-      return res.status(400).json({ message: "Missing required fields" });
+    if (!discountType || !discountValue || !expireDate || !totalQuantity || !userId) {
+      return res.status(400).json({ message: "Bạn cần nhập đầy đủ thông tin" });
     }
 
     // Tạo tài liệu mới
@@ -90,13 +91,13 @@ const getDiscountById = async (req, res) => {
 const updateDiscountById = async (req, res) => {
   const {id} = req.params
   const body = req.body
+  console.log(body)
     try {
       const discount = await Discount.findById(id)
       if(!discount) return res.status(200).json({message: "Không thể tìm thấy mã"});
       // Lấy tất cả các phiếu giảm giá, sắp xếp từ mới nhất đến cũ nhất
       const newRemainingQuantity = body.totalQuantity
-      const newId = discount._doc._id
-      const discounts = await Discount.findByIdAndUpdate(id,{...body,remainingQuantity: newRemainingQuantity, _id: newId })
+      const discounts = await Discount.findByIdAndUpdate(id,{...body,remainingQuantity: newRemainingQuantity })
   
       // Trả về danh sách
      return res.status(200).json({message: "Update Sucessfully"});

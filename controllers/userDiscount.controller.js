@@ -128,23 +128,36 @@ const getUserDiscountByReservationId =async (req, res) => {
   
 }
 const getUserDiscountByCode =async (req, res) => {
-  const { code, totalPrice } = req.params;
+  const { code, totalPrice, reservationId } = req.params;
   try {
-    const userDiscount = await UserDiscount.findOne({code: { $regex: new RegExp(code.trim(), "i") }}).populate('discountId')
-
-    if (!userDiscount) {
+    const reservation = await Reservation.findById(reservationId)
+    const newUserDiscount = await UserDiscount.findOne({code: { $regex: new RegExp(code.trim(), "i") }}).populate('discountId')
+    if (!newUserDiscount) {
       return res.status(501).json({ message: "Không thể tìm thấy mã" });
     }
-    if (Number(totalPrice) < userDiscount.discountId.minOrderValue) {
-      return res.status(501).json({ message: `Số tiền tối thiểu của mã này là ${userDiscount.discountId.minOrderValue / 1000}k` });
+    if (newUserDiscount.status === "USED") {
+      return res.status(501).json({ message: "Mã giảm giá đã được sử dụng" });
     }
-    console.log(userDiscount)
-    return res.status(201).json({userDiscount}); // Đây sẽ chứa đầy đủ thông tin của discount
+    if (!newUserDiscount.discountId.isActive) {
+      return res.status(501).json({ message: "Mã giảm giá không còn hoạt động" });
+    }
+    if (Number(totalPrice) < newUserDiscount.discountId.minOrderValue) {
+      return res.status(501).json({ message: `Số tiền tối thiểu của mã này là ${newUserDiscount.discountId.minOrderValue / 1000}k` });
+    }
+    // Cập nhật discount cũ thành AVAILABLE
+    if(reservation.userDiscountId){
+     await UserDiscount.findByIdAndUpdate(reservation.userDiscountId, {status: 'AVAILABLE'})
+    }
+    // Cập nhật discount mới thành USED
+    await UserDiscount.findByIdAndUpdate(newUserDiscount._doc._id, {status: 'USED'})
+    // Cập nhật userDiscount trong reservation
+    reservation.userDiscountId = newUserDiscount._doc._id
+    await reservation.save()
+    return res.status(201).json({newUserDiscount}); // Đây sẽ chứa đầy đủ thông tin của discount
   } catch (error) {
     console.error(error);
     throw new Error("Error while fetching discount details");
   }
-  
 }
 
 export {
@@ -152,5 +165,5 @@ export {
     getAllUserDiscount,
     getUserDiscountByReservationId,
     getUserDiscountByCode,
-    GetAllAvailableDiscount
+    GetAllAvailableDiscount,
 }
