@@ -85,9 +85,9 @@ class ReservationController {
 
       // Phát sự kiện qua WebSocket
       if (this.io) {
-        this.io.emit("new-notification", {
-          title: notification.title,
-          message: notification.message,
+        this.io.emit("reservation-canceled", {
+          reservationId: reservation_id,
+          status: "CANCELED",
         });
       }
 
@@ -218,13 +218,15 @@ class ReservationController {
     } = req.body;
     try {
       if (!req.body) return res.status(401).json({ message: "All data are required" });
-
-      const userDiscount = await UserDiscount.findById(couponValue).populate('discountId')
-      if(!userDiscount){
-        return res.status(401).json({ message: "Không tìm thấy mã giảm giá" });
-      }
-      if(!userDiscount.discountId.isActive){
-        return res.status(401).json({ message: "Mã giảm giá không còn hoạt động nữa" });
+      let userDiscount = null;
+      if (couponValue && couponValue !== "") {
+        userDiscount = await UserDiscount.findById(couponValue).populate("discountId");
+        if (!userDiscount) {
+          return res.status(401).json({ message: "Không tìm thấy mã giảm giá" });
+        }
+        if (!userDiscount.discountId.isActive) {
+          return res.status(401).json({ message: "Mã giảm giá không còn hoạt động nữa" });
+        }
       }
       // Tạo đặt chỗ
       const newReservation = await Reservation.create({
@@ -240,11 +242,8 @@ class ReservationController {
         isPayment,
         status,
       });
-
       if (!newReservation) return res.status(401).json({ message: "Can't Create new order" });
-      // Cập nhật trạn thái của mã giảm giá
-       await UserDiscount.findByIdAndUpdate(couponValue, {status: "USED"})
-      // Tạo mảng món ăn
+      await UserDiscount.findByIdAndUpdate(couponValue, { status: "USED" });
       const orderedDishes = dishs.map((dish) => ({
         dish_id: dish.dish_id,
         reservation_id: newReservation._id,
