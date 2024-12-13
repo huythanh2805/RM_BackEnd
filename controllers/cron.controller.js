@@ -18,5 +18,6 @@ export const cancelPastReservations = async () => {
   }
 };
 export const startCronJob = () => {
-  cron.schedule("0 0 * * *", cancelPastReservations);
+  console.log("thành công");
+  cron.schedule("*/30 * * * *", cancelPastReservations);
 };
