@@ -5,7 +5,8 @@ class FeedbackController {
     try {
       const feedbacks = await Feedback.find({})
         .populate("user_id", "email userName image createdAt")
-        .populate("dish_id", "name");
+        .populate("dish_id", "name")
+        .populate("setcombo_id", "name");
 
       if (feedbacks.length === 0) {
         return res.status(404).json({
@@ -40,6 +41,29 @@ class FeedbackController {
     } catch (error) {
       return res.status(500).json({
         message: "Get feedbacks by dish ID failed",
+        error: error.message,
+      });
+    }
+  }
+
+  async getFeedbackByComboId(req, res) {
+    const { id } = req.params;
+
+    try {
+      const feedbacks = await Feedback.find({ setcombo_id: id })
+        .populate("user_id", "email userName image createdAt")
+        .populate("setcombo_id", "name");
+
+      if (feedbacks.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "No feedbacks found for this combo" });
+      }
+
+      return res.status(200).json({ feedbacks });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Get feedbacks by combo ID failed",
         error: error.message,
       });
     }

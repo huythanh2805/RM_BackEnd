@@ -18,6 +18,10 @@ const feedBackSchame = new mongoose.Schema(
       type: mongoose.Schema.ObjectId,
       ref: "dish",
     },
+    setcombo_id: {
+      type: mongoose.Schema.ObjectId,
+      ref: "setCombo",
+    },
     isShow: {
       type: Boolean,
       default: true,

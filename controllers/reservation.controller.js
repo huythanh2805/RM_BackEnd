@@ -86,9 +86,9 @@ class ReservationController {
 
       // Phát sự kiện qua WebSocket
       if (this.io) {
-        this.io.emit("new-notification", {
-          title: notification.title,
-          message: notification.message,
+        this.io.emit("reservation-canceled", {
+          reservationId: reservation_id,
+          status: "CANCELED",
         });
       }
 
@@ -241,7 +241,6 @@ class ReservationController {
         isPayment,
         status,
       });
-
       if (!newReservation) return res.status(401).json({ message: "Can't Create new order" });
       // Cập nhật trạn thái của mã giảm giá
       if(couponValue){
