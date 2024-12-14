@@ -2,7 +2,6 @@ import axios from "axios";
 import CryptoJS from "crypto-js";
 import moment from "moment";
 import notifications from "../models/notifications.js";
-import OrderdCombo from "../models/orderedCombo.js";
 import OrderedDish from "../models/orderedDish.js";
 import Reservation from "../models/reservation.js";
 import UserDiscount from "../models/userDiscount.js";
@@ -83,7 +82,6 @@ const config = {
    */
   export const zaloTransactionCallback = async (req, res) => {
     let result = {};
-    console.log(req.body);
     const data = JSON.parse(req.body.data)
     const embed_data = JSON.parse(data.embed_data)
     const {reservation} = embed_data
@@ -105,12 +103,22 @@ const config = {
       } else {
          const {
             dishs,
+            type,
             couponValue,
             ...rest
           } = reservation;
         // thanh toán thành công
+        // Nếu trườnh hợp là update
+        console.log({id: reservation._id})
+        console.log({deposite: reservation.deposit})
+        console.log({type})
+        if(type === "UPDATE"){
+          console.log('update')
+           await Reservation.findByIdAndUpdate(reservation._id, {deposit: reservation.deposit}, {new: true})
+           return res.status(201).json({ message: "Cập nhật thành công" });
+        }
+        // Nếu trường hợp là tạo mới
           if (!req.body) return res.status(401).json({ message: "All data are required" });
-        
               if(couponValue){
                 const userDiscount = await UserDiscount.findById(couponValue).populate('discountId')
               if(!userDiscount){
