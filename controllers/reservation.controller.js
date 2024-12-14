@@ -1,3 +1,4 @@
+import { model } from "mongoose";
 import { sendEmailConfirmedStatus } from "../configs/transporter.js";
 import notifications from "../models/notifications.js";
 import OrderdCombo from "../models/orderedCombo.js";
@@ -190,7 +191,15 @@ class ReservationController {
     try {
       const { userId } = req.params;
       console.log(userId);
-      const reservations = await Reservation.find({ user_id: userId }).sort({ createdAt: -1 });
+      const reservations = await Reservation.find({ user_id: userId })
+      .populate({
+        path: 'ordered_dishes',
+        populate: {
+          path: 'dish_id',
+          model: 'dish'
+        }
+      })
+      .sort({ createdAt: -1 });
 
       if (!reservations || reservations.length === 0) {
         return res.status(404).json({ message: "No reservations found for this user" });
