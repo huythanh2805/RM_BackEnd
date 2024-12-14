@@ -23,13 +23,6 @@ const reservationSchame = new mongoose.Schema(
       type: Number,
       default: 1,
     },
-    code: {
-      type: String,
-    },
-    isPayment: {
-      type: Boolean,
-      default: false,
-    },
     ordered_dishes: [
       {
         type: mongoose.Schema.ObjectId,
@@ -52,7 +45,7 @@ const reservationSchame = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["ISWAITING", "ISCOMFIRMED", "SEATED", "COMPLETED", "CANCELED", "ISPAYMENT"],
+      enum: ["ISWAITING", "ISCOMFIRMED", "SEATED", "COMPLETED", "CANCELED"],
       default: "ISWAITING",
     },
     startTime: {
@@ -64,9 +57,13 @@ const reservationSchame = new mongoose.Schema(
     },
     payment_method: {
       type: String,
-      enum: ["CASHPAYMENT", "BANKPAYMENT"],
-      default: "CASHPAYMENT",
+      enum: ["CASH", "MOMO","ZALOPAY"],
+      default: "CASH",
     },
+    isUsedDiscount: {
+      type: Boolean,
+      default: false
+    }
   },
   {
     timestamps: true,

@@ -24,6 +24,7 @@ import userRoutes from "./routes/user.route.js";
 import dashBoardRoute from "./routes/dashboard.route.js";
 import discountRoute from "./routes/discount.route.js";
 import userDiscountRoute from "./routes/userDiscount.route.js";
+import paymentRoute from "./routes/payment.route.js";
 import { startCronJob } from "./controllers/cron.controller.js";
 
 // .env
@@ -34,7 +35,8 @@ const app = express();
 const __filename = fileURLToPath(import.meta.url); // Lấy tên file
 const __dirname = path.dirname(__filename); // Lấy đường dẫn thư mục
 const server = http.createServer(app);
-const io = new Server(server, {
+
+export const io = new Server(server, {
   cors: {
     origin: "http://localhost:4444", // Địa chỉ frontend
     methods: ["GET", "POST"],
@@ -79,6 +81,8 @@ app.use("/api", notificationRoute);
 app.use("/api", discountRoute);
 // user discount route
 app.use("/api", userDiscountRoute);
+// momo route
+app.use("/api", paymentRoute);
 
 app.use(feedbackRoute);
 

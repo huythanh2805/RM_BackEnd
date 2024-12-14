@@ -46,7 +46,8 @@ class ReservationController {
             model: "setCombo",
           },
         },
-      });
+      })
+      .populate({path: 'userDiscountId', select: 'code'})
     return reservation;
   };
   getReserDetailById = async (req, res) => {
@@ -212,26 +213,24 @@ class ReservationController {
       userName,
       couponValue,
       deposit,
-      code,
       isPayment,
       status,
     } = req.body;
     try {
       if (!req.body) return res.status(401).json({ message: "All data are required" });
-      let userDiscount = null;
-      if (couponValue && couponValue !== "") {
-        userDiscount = await UserDiscount.findById(couponValue).populate("discountId");
-        if (!userDiscount) {
-          return res.status(401).json({ message: "Không tìm thấy mã giảm giá" });
-        }
-        if (!userDiscount.discountId.isActive) {
-          return res.status(401).json({ message: "Mã giảm giá không còn hoạt động nữa" });
-        }
+
+      if(couponValue){
+        const userDiscount = await UserDiscount.findById(couponValue).populate('discountId')
+      if(!userDiscount){
+        return res.status(401).json({ message: "Không tìm thấy mã giảm giá" });
+      }
+      if(!userDiscount.discountId.isActive){
+        return res.status(401).json({ message: "Mã giảm giá không còn hoạt động nữa" });
+      }
       }
       // Tạo đặt chỗ
       const newReservation = await Reservation.create({
         user_id,
-        code,
         userName,
         guests_count,
         startTime,
@@ -243,7 +242,11 @@ class ReservationController {
         status,
       });
       if (!newReservation) return res.status(401).json({ message: "Can't Create new order" });
-      await UserDiscount.findByIdAndUpdate(couponValue, { status: "USED" });
+      // Cập nhật trạn thái của mã giảm giá
+      if(couponValue){
+       await UserDiscount.findByIdAndUpdate(couponValue, {status: "USED"})
+      }
+      // Tạo mảng món ăn
       const orderedDishes = dishs.map((dish) => ({
         dish_id: dish.dish_id,
         reservation_id: newReservation._id,
