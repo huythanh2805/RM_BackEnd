@@ -18,7 +18,6 @@ const reservationRoute = (io) => {
   router.delete("/reservations", reservationController.deleteReservationByIdArray);
   router.patch("/reservations/reselect", reservationController.reselectTable);
   router.patch("/reservations/select", reservationController.selectTable);
-
   return router;
 };
 
