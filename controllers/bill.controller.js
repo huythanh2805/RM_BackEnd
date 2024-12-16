@@ -279,8 +279,8 @@ class BillController {
       this.io.emit("bank-payment-success", {
         title: notification.title,
         message: notification.message,
+        bill_id: response.bill_id,
       });
-
       res.status(200).send(response);
     } catch (error) {
       console.error("Error processing payment:", error);
