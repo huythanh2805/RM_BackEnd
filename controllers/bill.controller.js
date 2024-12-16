@@ -261,7 +261,13 @@ class BillController {
       if (!transferAmount) {
         return res.status(400).send("Transfer amount not found");
       }
-      await this.createBillBank(transactionCode, transferAmount, original_money, discount_money, result);
+      const response = await this.createBillBank(
+        transactionCode,
+        transferAmount,
+        original_money,
+        discount_money,
+        result
+      );
       // Create a new notification
       const notification = new notifications({
         title: "Thanh toán thành công",
@@ -275,7 +281,7 @@ class BillController {
         message: notification.message,
       });
 
-      res.status(200).send("Payment processed successfully");
+      res.status(200).send(response);
     } catch (error) {
       console.error("Error processing payment:", error);
       res.status(500).send("Internal server error");
