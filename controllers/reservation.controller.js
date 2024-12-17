@@ -1,4 +1,3 @@
-import { model } from "mongoose";
 import { sendEmailConfirmedStatus } from "../configs/transporter.js";
 import notifications from "../models/notifications.js";
 import OrderdCombo from "../models/orderedCombo.js";
@@ -48,22 +47,37 @@ class ReservationController {
           },
         },
       })
-      .populate({path: 'userDiscountId', select: 'code'})
+      .populate({ path: "userDiscountId", select: "code" });
     return reservation;
   };
   getReserDetailById = async (req, res) => {
     try {
       const { reservation_id } = req.params;
       console.log("Received reservation_id:", reservation_id);
-
-      // Tìm reservation theo ID và populate các trường liên quan
-      const reservation = await this.getDetail(reservation_id);
-
-      // Kiểm tra nếu reservation không tồn tại
+      const reservation = await Reservation.findById(reservation_id)
+        .populate({
+          path: "ordered_dishes",
+          populate: {
+            path: "dish_id",
+            model: "dish",
+          },
+        })
+        .populate({
+          path: "ordered_combos",
+          populate: {
+            path: "setComboProduct_id",
+            model: "setComboProduct",
+            populate: {
+              path: "combo_id",
+              model: "setCombo",
+            },
+          },
+        })
+        .exec();
+      console.log(reservation);
       if (!reservation) {
         return res.status(404).json({ message: "Reservation not found" });
       }
-      // Trả về thông tin reservation
       return res.status(200).json(reservation);
     } catch (error) {
       console.error(error);
@@ -192,14 +206,14 @@ class ReservationController {
       const { userId } = req.params;
       console.log(userId);
       const reservations = await Reservation.find({ user_id: userId })
-      .populate({
-        path: 'ordered_dishes',
-        populate: {
-          path: 'dish_id',
-          model: 'dish'
-        }
-      })
-      .sort({ createdAt: -1 });
+        .populate({
+          path: "ordered_dishes",
+          populate: {
+            path: "dish_id",
+            model: "dish",
+          },
+        })
+        .sort({ createdAt: -1 });
 
       if (!reservations || reservations.length === 0) {
         return res.status(404).json({ message: "No reservations found for this user" });
@@ -213,29 +227,19 @@ class ReservationController {
   };
   // add new reservation client
   createClientReservation = async (req, res) => {
-    const {
-      startTime,
-      dishs,
-      user_id,
-      guests_count,
-      phoneNumber,
-      userName,
-      couponValue,
-      deposit,
-      isPayment,
-      status,
-    } = req.body;
+    const { startTime, dishs, user_id, guests_count, phoneNumber, userName, couponValue, deposit, isPayment, status } =
+      req.body;
     try {
       if (!req.body) return res.status(401).json({ message: "All data are required" });
 
-      if(couponValue){
-        const userDiscount = await UserDiscount.findById(couponValue).populate('discountId')
-      if(!userDiscount){
-        return res.status(401).json({ message: "Không tìm thấy mã giảm giá" });
-      }
-      if(!userDiscount.discountId.isActive){
-        return res.status(401).json({ message: "Mã giảm giá không còn hoạt động nữa" });
-      }
+      if (couponValue) {
+        const userDiscount = await UserDiscount.findById(couponValue).populate("discountId");
+        if (!userDiscount) {
+          return res.status(401).json({ message: "Không tìm thấy mã giảm giá" });
+        }
+        if (!userDiscount.discountId.isActive) {
+          return res.status(401).json({ message: "Mã giảm giá không còn hoạt động nữa" });
+        }
       }
       // Tạo đặt chỗ
       const newReservation = await Reservation.create({
@@ -252,39 +256,39 @@ class ReservationController {
       });
       if (!newReservation) return res.status(401).json({ message: "Can't Create new order" });
       // Cập nhật trạn thái của mã giảm giá
-      if(couponValue){
-       await UserDiscount.findByIdAndUpdate(couponValue, {status: "USED"})
+      if (couponValue) {
+        await UserDiscount.findByIdAndUpdate(couponValue, { status: "USED" });
       }
-      // Tạo mảng món ăn
-      const orderedDishes = dishs.map((dish) => ({
-        dish_id: dish.dish_id,
-        reservation_id: newReservation._id,
-        quantity: dish.quantity,
-        status: "ISPREPARED",
-      }));
-
-      const insertedOrderedDishes = await OrderedDish.insertMany(orderedDishes);
-      if (!insertedOrderedDishes) return res.status(401).json({ message: "Can't Create new ordered dish" });
-
-      const orderedDishIds = insertedOrderedDishes.map((dish) => dish._id);
-      await Reservation.findByIdAndUpdate(newReservation._id, {
-        ordered_dishes: orderedDishIds,
-      });
-
+      console.log({ dishs });
+      for (const orderedDish of dishs) {
+        if (orderedDish.type === "combo") {
+          const newOrderedCombo = await OrderdCombo.create({
+            setComboProduct_id: orderedDish._id,
+            quantity: orderedDish.quantity,
+            reservation_id: newReservation._doc._id,
+          });
+          newReservation.ordered_combos.push(newOrderedCombo._doc._id);
+        } else if (orderedDish.type === "dish") {
+          const newOrderedDish = await OrderedDish.create({
+            dish_id: orderedDish.dish_id._id,
+            quantity: orderedDish.quantity,
+            reservation_id: newReservation._doc._id,
+          });
+          newReservation.ordered_dishes.push(newOrderedDish._doc._id);
+        }
+      }
+      await newReservation.save();
       // Tạo thông báo
       const notification = new notifications({
         title: "Yêu cầu đặt bàn mới",
         message: `Khách hàng ${userName} đã đặt bàn thành công. Vui lòng xác nhận.`,
       });
-
       await notification.save();
-
       // Phát sự kiện qua WebSocket
       this.io.emit("new-notification", {
         title: notification.title,
         message: notification.message,
       });
-
       return res.status(201).json({ message: "Đặt bàn thành công!" });
     } catch (error) {
       console.error("Inventories_Error", error);
