@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
+import { nanoid } from "nanoid";
 import Discount from "../models/discount.js";
-import UserDiscount from "../models/userDiscount.js";
-import { nanoid } from "nanoid"; 
 import Reservation from "../models/reservation.js";
+import UserDiscount from "../models/userDiscount.js";
 const createUserDiscount = async (req, res) => {
   const { discountId, userId } = req.body;
 
@@ -65,9 +65,9 @@ const createUserDiscount = async (req, res) => {
     console.error(error);
     return res.status(500).json({ message: "Internal server error." });
   }
-}
+};
 
-const getAllUserDiscount =async (req, res) => {
+const getAllUserDiscount = async (req, res) => {
   const { userId } = req.params;
 
   try {
@@ -76,18 +76,18 @@ const getAllUserDiscount =async (req, res) => {
       return res.status(400).json({ message: "Invalid userId." });
     }
 
-    // Lấy tất cả userDiscount của userId và populate thông tin discount
+   
     const userDiscounts = await UserDiscount.find({ userId })
-      .populate("discountId") // Populate discount thông qua discountId
-      .sort({ createdAt: -1 }); // Sắp xếp từ mới đến cũ
+      .populate("discountId") 
+      .sort({ createdAt: -1 }); 
 
     return res.status(200).json(userDiscounts);
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: "Internal server error." });
   }
-}
-const GetAllAvailableDiscount =async (req, res) => {
+};
+const GetAllAvailableDiscount = async (req, res) => {
   const { userId } = req.params;
 
   try {
@@ -106,8 +106,8 @@ const GetAllAvailableDiscount =async (req, res) => {
     console.error(error);
     return res.status(500).json({ message: "Internal server error." });
   }
-}
-const getUserDiscountByReservationId =async (req, res) => {
+};
+const getUserDiscountByReservationId = async (req, res) => {
   const { reservationId } = req.params;
   try {
     const reservation = await Reservation.findById(reservationId).populate({
@@ -115,23 +115,24 @@ const getUserDiscountByReservationId =async (req, res) => {
       populate: {
         path: "discountId", // Populate tiếp trường discountId trong userDiscountId
       },
-    });;
+    });
     if (!reservation) {
       return res.status(501).json({ message: "Reservation not found" });
     }
-    console.log(reservation.userDiscountId)
+    console.log(reservation.userDiscountId);
     return res.status(201).json(reservation.userDiscountId); // Đây sẽ chứa đầy đủ thông tin của discount
   } catch (error) {
     console.error(error);
     throw new Error("Error while fetching discount details");
   }
-  
-}
-const getUserDiscountByCode =async (req, res) => {
+};
+const getUserDiscountByCode = async (req, res) => {
   const { code, totalPrice, reservationId } = req.params;
   try {
-    const reservation = await Reservation.findById(reservationId)
-    const newUserDiscount = await UserDiscount.findOne({code: { $regex: new RegExp(code.trim(), "i") }}).populate('discountId')
+    const reservation = await Reservation.findById(reservationId);
+    const newUserDiscount = await UserDiscount.findOne({ code: { $regex: new RegExp(code.trim(), "i") } }).populate(
+      "discountId"
+    );
     if (!newUserDiscount) {
       return res.status(501).json({ message: "Không thể tìm thấy mã" });
     }
@@ -142,28 +143,30 @@ const getUserDiscountByCode =async (req, res) => {
       return res.status(501).json({ message: "Mã giảm giá không còn hoạt động" });
     }
     if (Number(totalPrice) < newUserDiscount.discountId.minOrderValue) {
-      return res.status(501).json({ message: `Số tiền tối thiểu của mã này là ${newUserDiscount.discountId.minOrderValue / 1000}k` });
+      return res
+        .status(501)
+        .json({ message: `Số tiền tối thiểu của mã này là ${newUserDiscount.discountId.minOrderValue / 1000}k` });
     }
     // Cập nhật discount cũ thành AVAILABLE
-    if(reservation.userDiscountId){
-     await UserDiscount.findByIdAndUpdate(reservation.userDiscountId, {status: 'AVAILABLE'})
+    if (reservation.userDiscountId) {
+      await UserDiscount.findByIdAndUpdate(reservation.userDiscountId, { status: "AVAILABLE" });
     }
     // Cập nhật discount mới thành USED
-    await UserDiscount.findByIdAndUpdate(newUserDiscount._doc._id, {status: 'USED'})
+    await UserDiscount.findByIdAndUpdate(newUserDiscount._doc._id, { status: "USED" });
     // Cập nhật userDiscount trong reservation
-    reservation.userDiscountId = newUserDiscount._doc._id
-    await reservation.save()
-    return res.status(201).json({newUserDiscount}); // Đây sẽ chứa đầy đủ thông tin của discount
+    reservation.userDiscountId = newUserDiscount._doc._id;
+    await reservation.save();
+    return res.status(201).json({ newUserDiscount }); // Đây sẽ chứa đầy đủ thông tin của discount
   } catch (error) {
     console.error(error);
     throw new Error("Error while fetching discount details");
   }
-}
+};
 
 export {
-    createUserDiscount,
-    getAllUserDiscount,
-    getUserDiscountByReservationId,
-    getUserDiscountByCode,
-    GetAllAvailableDiscount,
-}
+  createUserDiscount,
+  GetAllAvailableDiscount,
+  getAllUserDiscount,
+  getUserDiscountByCode,
+  getUserDiscountByReservationId,
+};
