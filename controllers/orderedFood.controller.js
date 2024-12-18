@@ -26,8 +26,8 @@ class OrderedFoodController {
           },
         ],
       });
-      console.log("OrderedFoods:", orderedFoods);
-      console.log("OrderedCombos:", orderedCombos);
+      // const detail = await OrderedCombo.find({reservation_id: reservationId})
+      // console.log("OrderedCombos:", detail);
 
       const combos = orderedCombos.map((combo) => {
         const { _id, ...rest } = combo.setComboProduct_id.combo_id;
@@ -42,7 +42,7 @@ class OrderedFoodController {
       return res.status(201).json([...combos, ...foods]);
     } catch (error) {
       console.log("Inventories_Error", error);
-      return res.status(500).json({ message: "Internal Server Error" });
+      return res.status(500).json({ message: "Internal Server Error 4" });
     }
   };
   // add new
