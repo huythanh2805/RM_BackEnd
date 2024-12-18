@@ -53,7 +53,6 @@ class ReservationController {
   getReserDetailById = async (req, res) => {
     try {
       const { reservation_id } = req.params;
-      console.log("Received reservation_id:", reservation_id);
       const reservation = await Reservation.findById(reservation_id)
         .populate({
           path: "ordered_dishes",
@@ -74,7 +73,6 @@ class ReservationController {
           },
         })
         .exec();
-      console.log(reservation);
       if (!reservation) {
         return res.status(404).json({ message: "Reservation not found" });
       }
@@ -259,18 +257,18 @@ class ReservationController {
       if (couponValue) {
         await UserDiscount.findByIdAndUpdate(couponValue, { status: "USED" });
       }
-      console.log({ dishs });
       for (const orderedDish of dishs) {
+        console.log({orderedDish})
         if (orderedDish.type === "combo") {
           const newOrderedCombo = await OrderdCombo.create({
-            setComboProduct_id: orderedDish._id,
+            setComboProduct_id: orderedDish.dish_id,
             quantity: orderedDish.quantity,
             reservation_id: newReservation._doc._id,
           });
           newReservation.ordered_combos.push(newOrderedCombo._doc._id);
         } else if (orderedDish.type === "dish") {
           const newOrderedDish = await OrderedDish.create({
-            dish_id: orderedDish.dish_id._id,
+            dish_id: orderedDish.dish_id,
             quantity: orderedDish.quantity,
             reservation_id: newReservation._doc._id,
           });
@@ -362,8 +360,8 @@ class ReservationController {
     try {
       const reservation = await Reservation.findById(reservation_id);
       // Check if reser startTime larger than now
-      if (new Date(reservation.startTime).getTime() < new Date().getTime())
-        return res.status(401).json({ message: "It's not reach out the startTime yet" });
+      // if (new Date(reservation.startTime).getTime() < new Date().getTime())
+      //   return res.status(401).json({ message: "It's not reach out the startTime yet" });
       const table = await Table.findById(table_id);
       if (!table) return res.status(404).json({ message: "bàn không tồn tại" });
       if (reservation.guests_count > table.number_of_seats)
