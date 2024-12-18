@@ -34,5 +34,5 @@ export const cancelDiscound = async () => {
 export const startCronJob = () => {
   console.log("thành công");
   cron.schedule("*/30 * * * *", cancelPastReservations);
-  cron.schedule("*/2 * * * *", cancelDiscound);
+  cron.schedule("0 0 * * *", cancelDiscound);
 };
