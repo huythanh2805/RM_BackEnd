@@ -3,14 +3,13 @@ import ReservationController from "../controllers/reservation.controller.js";
 
 const reservationRoute = (io) => {
   const router = express.Router();
-  const reservationController = new ReservationController(io); // Truyền `io` vào controller
+  const reservationController = new ReservationController(io); 
 
   router.get("/reservations/v2/:table_id", reservationController.getReserDetailByTableId);
   router.post("/reservations/v2/client", reservationController.createClientReservation);
   router.get("/reservations/user/:userId", reservationController.getReservationsByUser);
   router.get("/reservations/history-detail/:reservation_id", reservationController.getReserDetailById);
   router.put("/reservations/cancel/:reservation_id", reservationController.cancelReservationById);
-  router.post("/webhook/seepay/reservation", reservationController.checkout);
   router.get("/reservations", reservationController.getAllReser);
   router.get("/reservations/:reservation_id", reservationController.getReserDetailById);
   router.post("/reservations", reservationController.createAdminReservation);
