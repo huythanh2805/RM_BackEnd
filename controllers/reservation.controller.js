@@ -194,7 +194,7 @@ class ReservationController {
       if (reservation) {
         await Table.findByIdAndUpdate({ _id: table_id }, { status: "ISSERVING" }, { new: true });
       }
-      return res.status(201).json({ message: "Succussfully!", reservation });
+      return res.status(201).json({ message: "Tạo đơn đặt bàn thành công!", reservation });
     } catch (error) {
       console.log("Inventories_Error", error);
       return res.status(500).json({ message: "Internal Server Error" });
@@ -297,7 +297,7 @@ class ReservationController {
   };
   // Delete reservation by Array Id
   deleteReservationByIdArray = async (req, res) => {
-    const { IdArray: ArrayId } = req.body; // Lấy ArrayId từ body của request
+    const { IdArray: ArrayId } = req.body;
     // Kiểm tra xem ArrayId có tồn tại và là một mảng hay không
     if (!ArrayId || !Array.isArray(ArrayId)) {
       return res.status(400).json({
@@ -313,19 +313,16 @@ class ReservationController {
       });
       // Lấy danh sách các table_id từ các reservation
       const tableIds = reservations.map((reservation) => reservation.table_id);
-
       // Bước 2: Cập nhật trạng thái của tất cả các table có id trong danh sách tableIds về 'available'
       await Table.updateMany({ _id: { $in: tableIds } }, { $set: { status: "AVAILABLE" } });
-
-      // Sử dụng deleteMany để xóa các reservation có id nằm trong ArrayId
       await Reservation.deleteMany({
-        _id: { $in: ArrayId }, // Điều kiện _id nằm trong mảng ArrayId
+        _id: { $in: ArrayId }, 
       });
 
       // Trả về kết quả thành công
       return res.status(200).json({
         success: true,
-        message: `Reservations were deleted`,
+        message: `Đơn đặt bàn đã được xóa !`,
       });
     } catch (error) {
       // Xử lý lỗi khi thực hiện xóa
@@ -340,8 +337,7 @@ class ReservationController {
   // Reselect table
   reselectTable = async (req, res) => {
     const { reservation_id, table_id } = req.body;
-    console.log({ reservation_id, table_id });
-    if (!reservation_id) return res.status(401).json({ message: "There is no Id to update reservation" });
+    if (!reservation_id) return res.status(401).json({ message: "Không có Id để cập nhật đặt chỗ" });
 
     try {
       const oldReservation = await Reservation.findById(reservation_id);
@@ -352,7 +348,7 @@ class ReservationController {
       //  update reservation table_id
       await Reservation.findByIdAndUpdate({ _id: reservation_id }, { table_id: table_id });
 
-      return res.status(201).json({ message: "Successfully!" });
+      return res.status(201).json({ message: "Đổi bàn thành công!" });
     } catch (error) {
       console.log("Inventories_Error", error);
       return res.status(500).json({ message: "Internal Server Error" });
@@ -368,11 +364,15 @@ class ReservationController {
       // Check if reser startTime larger than now
       if (new Date(reservation.startTime).getTime() < new Date().getTime())
         return res.status(401).json({ message: "It's not reach out the startTime yet" });
+      const table = await Table.findById(table_id);
+      if (!table) return res.status(404).json({ message: "bàn không tồn tại" });
+      if (reservation.guests_count > table.number_of_seats)
+        return res.status(400).json({ message: "Quá số người quy định của bàn" });
       await Table.findByIdAndUpdate(table_id, { $set: { status: "ISSERVING" } });
       //  update reservation table_id
       await Reservation.findByIdAndUpdate(reservation_id, { table_id: table_id, status: "SEATED" });
 
-      return res.status(201).json({ message: "Successfully!" });
+      return res.status(201).json({ message: "Xếp bàn thành công!" });
     } catch (error) {
       console.log("Inventories_Error", error);
       return res.status(500).json({ message: "Internal Server Error" });
@@ -395,7 +395,7 @@ class ReservationController {
           );
         if (status === "CANCELED")
           sendEmailConfirmedStatus(reservation.user_id.email, "Đơn đặt bàn của bạn không được chấp nhận 😛😛");
-        return res.status(201).json({ message: "Succussfully!" });
+        return res.status(201).json({ message: "Hủy đơn đặt bàn thành công!" });
       }
 
       await Reservation.findByIdAndUpdate(reservation_id, {
@@ -406,61 +406,12 @@ class ReservationController {
         detailAddress,
         phoneNumber,
       });
-      return res.status(201).json({ message: "Succussfully!" });
+      return res.status(201).json({ message: "Xác nhận đơn đặt bàn thành công!" });
     } catch (error) {
       console.log("Inventories_Error", error);
       return res.status(500).json({ message: "Internal Server Error" });
     }
   };
-  getReservation = async (code) => {
-    try {
-      const reservations = await Reservation.find({
-        code,
-      });
-      if (reservations.length === 0) {
-        return null;
-      }
-      return reservations[0];
-    } catch (error) {
-      console.error("GetReservation_Error", error);
-      throw new Error("Lỗi trong quá trình tìm kiếm đơn đặt bàn."); // Ném lỗi để xử lý bên ngoài
-    }
-  };
 
-  checkout = async (req, res) => {
-    try {
-      const content = req.body.content;
-      const parts = content.trim().split(/\s+/);
-      let codeOrder = parts[0];
-      const coc = req.body.transferAmount;
-      const reservation = await this.getReservation(codeOrder);
-
-      if (!reservation) {
-        return res.status(404).json({ message: "Không tìm thấy đơn đặt bàn phù hợp." });
-      }
-      reservation.deposit = coc;
-      reservation.isPayment = true;
-      reservation.status = "ISWAITING";
-
-      await reservation.save();
-      const notification = new notifications({
-        title: "Chuyển tiền cọc đơn hàng",
-        message: `Đơn hàng ${reservation.code} đã đặt cọc. Vui lòng xác nhận.`,
-      });
-
-      await notification.save();
-
-      // Phát sự kiện qua WebSocket
-      this.io.emit("notification", {
-        title: notification.title,
-        message: notification.message,
-      });
-      // Trả về kết quả thành công
-      return res.status(200).json({ message: "Thanh toán và đặt bàn thành công!" });
-    } catch (error) {
-      console.error("Checkout_Error", error);
-      return res.status(500).json({ message: "Lỗi trong quá trình thanh toán và tạo đơn đặt bàn." });
-    }
-  };
 }
 export default ReservationController;
