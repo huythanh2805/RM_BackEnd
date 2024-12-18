@@ -105,6 +105,7 @@ const config = {
             dishs,
             type,
             couponValue,
+            status,
             ...rest
           } = reservation;
         // thanh toán thành công
@@ -128,17 +129,11 @@ const config = {
                 return res.status(401).json({ message: "Mã giảm giá không còn hoạt động nữa" });
               }
               }
-              console.log({
-                status: "ISWAITING",
-                userDiscountId: couponValue || null,
-                ...rest
-              })
-              
               // Tạo đặt chỗ
               const newReservation = await Reservation.create({
-                status: "ISWAITING",
                 userDiscountId: couponValue || null,
-                ...rest
+                ...rest,
+                status: "ISWAITING",
               });
 
         
