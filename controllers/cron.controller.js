@@ -1,4 +1,5 @@
 import cron from "node-cron";
+import discount from "../models/discount.js";
 import Reservation from "../models/reservation.js";
 
 export const cancelPastReservations = async () => {
@@ -17,7 +18,21 @@ export const cancelPastReservations = async () => {
     console.error("Error in cancelPastReservations:", error);
   }
 };
+export const cancelDiscound = async () => {
+  try {
+    const currentDate = new Date();
+
+    // Cập nhật trạng thái của các mã giảm giá đã hết hạn
+    const result = await discount.updateMany(
+      { expireDate: { $lt: currentDate }, isActive: true }, // Điều kiện
+      { $set: { isActive: false } } // Cập nhật trạng thái
+    );
+  } catch (error) {
+    console.error("Error running cron job:", error);
+  }
+};
 export const startCronJob = () => {
   console.log("thành công");
   cron.schedule("*/30 * * * *", cancelPastReservations);
+  cron.schedule("*/2 * * * *", cancelDiscound);
 };
