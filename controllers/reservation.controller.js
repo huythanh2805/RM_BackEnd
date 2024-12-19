@@ -54,6 +54,10 @@ class ReservationController {
     try {
       const { reservation_id } = req.params;
       const reservation = await Reservation.findById(reservation_id)
+      .populate({
+        path: "userDiscountId",
+        model: "userDiscount",
+      })
         .populate({
           path: "ordered_dishes",
           populate: {
@@ -225,7 +229,7 @@ class ReservationController {
   };
   // add new reservation client
   createClientReservation = async (req, res) => {
-    const { startTime, dishs, user_id, guests_count, phoneNumber, userName, couponValue, deposit, isPayment, status } =
+    const { startTime, dishs, user_id, guests_count, phoneNumber, userName, couponValue, deposit, isPayment, status, isOrderedOnline } =
       req.body;
     try {
       if (!req.body) return res.status(401).json({ message: "All data are required" });
@@ -251,6 +255,7 @@ class ReservationController {
         deposit,
         isPayment,
         status,
+        isOrderedOnline
       });
       if (!newReservation) return res.status(401).json({ message: "Can't Create new order" });
       // Cập nhật trạn thái của mã giảm giá
