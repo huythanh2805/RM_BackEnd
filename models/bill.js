@@ -1,43 +1,33 @@
-import mongoose from "mongoose";
+import mongoose from "mongoose"
 
 const billSchame = new mongoose.Schema(
   {
     reservation_id: {
       type: mongoose.Schema.ObjectId,
       ref: "reservation",
-      required: true,
-    },
-    billDetail_id: {
-      type: mongoose.Schema.ObjectId,
-      ref: "billDetail",
-    },
-    original_money: {
-      type: Number,
-      required: true,
-    },
-    VAT: {
-      type: Number,
-      default: 5,
-      // Tính theo phần trăm
+      required: true
     },
     total_money: {
       type: Number,
+      required: true,
     },
-    discount_money: {
+    original_money: {
       type: Number,
-    },
-    deposit_money: {
-      type: Number,
+      required: true
     },
     status: {
       type: String,
       enum: ["ISNOTPAID", "ISPAID"],
       default: "ISNOTPAID",
     },
+    discount: {
+      type: Boolean,
+      default: false
+    }
   },
   {
     timestamps: true,
   }
-);
+)
 
-export default mongoose.models.bill || mongoose.model("bill", billSchame);
+export default mongoose.models.bill || mongoose.model("bill", billSchame)

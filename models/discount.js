@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
 
 const discountSchame = new mongoose.Schema({
+    code: {
+        type: String,
+        unique: true,
+        required: true
+    },
     discountType: {
         type: String,
         enum: ["FIXEDAMOUNT", "PERCENTAGE"],
@@ -15,24 +20,10 @@ const discountSchame = new mongoose.Schema({
         required: true,
         default: null
     },
-    minOrderValue: {
+    minimumMoney: {
         type: Number,
         required: true
-    },
-    totalQuantity: {
-        type: Number,
-        required: true
-    },
-    remainingQuantity: {
-        type: Number,
-    },
-    createdBy: {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: 'user',
-    },
-    isActive: {
-        type: Boolean,
-    },
+    }
 }, 
 {
     timestamps: true
