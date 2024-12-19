@@ -258,7 +258,7 @@ class ReservationController {
         await UserDiscount.findByIdAndUpdate(couponValue, { status: "USED" });
       }
       for (const orderedDish of dishs) {
-        console.log({orderedDish})
+        console.log({ orderedDish });
         if (orderedDish.type === "combo") {
           const newOrderedCombo = await OrderdCombo.create({
             setComboProduct_id: orderedDish.dish_id,
@@ -314,7 +314,7 @@ class ReservationController {
       // Bước 2: Cập nhật trạng thái của tất cả các table có id trong danh sách tableIds về 'available'
       await Table.updateMany({ _id: { $in: tableIds } }, { $set: { status: "AVAILABLE" } });
       await Reservation.deleteMany({
-        _id: { $in: ArrayId }, 
+        _id: { $in: ArrayId },
       });
 
       // Trả về kết quả thành công
@@ -386,13 +386,44 @@ class ReservationController {
         await Reservation.findByIdAndUpdate(reservation_id, {
           status,
         });
-        if (status === "ISCOMFIRMED")
-          sendEmailConfirmedStatus(
-            reservation.user_id.email,
-            "Bạn đã đặt lịch thành công vui lòng đến đúng thời gian 🎉🎉"
-          );
+        const formattedTime = new Date(reservation.startTime).toLocaleString("vi-VN", {
+          weekday: "long",
+          year: "numeric",
+          month: "numeric",
+          day: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+          second: "numeric",
+        });
+        const htmlContent = `
+          🎉 Đặt bàn thành công! 🎉
+          Chào bạn ${reservation.userName},
+          Chúng tôi rất vui khi thông báo rằng đơn đặt bàn của bạn đã được xác nhận. Dưới đây là các thông tin chi tiết:
+          Tên khách hàng: ${reservation.userName}
+          Số khách: ${reservation.guests_count} người
+          Phương thức thanh toán: ${reservation.payment_method}
+          Số tiền đã cọc trước: ${reservation.deposit}
+          Số điện thoại: ${reservation.phoneNumber}
+          Thời gian đặt: ${formattedTime}
+          Hãy nhớ đến đúng giờ để trải nghiệm một bữa ăn tuyệt vời cùng chúng tôi! 😊
+          Nếu bạn có bất kỳ câu hỏi nào, đừng ngần ngại liên hệ với chúng tôi.
+        `;
+        const htmlContent2 = `
+          Đơn đặt bàn của bạn đã bị hủy😛
+          Chào bạn ${reservation.userName},
+          Chúng tôi rất tiếc khi thông báo rằng đơn đặt bàn của bạn đã bị hủy. Dưới đây là các thông tin chi tiết:
+          Tên khách hàng: ${reservation.userName}
+          Số khách: ${reservation.guests_count} người
+          Phương thức thanh toán: ${reservation.payment_method}
+          Số tiền đã cọc trước: ${reservation.deposit}
+          Số điện thoại: ${reservation.phoneNumber}
+          Thời gian đặt: ${formattedTime}
+          
+          Nếu bạn có bất kỳ câu hỏi nào, đừng ngần ngại liên hệ với chúng tôi.
+        `;
+        if (status === "ISCOMFIRMED") sendEmailConfirmedStatus(reservation.user_id.email, htmlContent);
         if (status === "CANCELED")
-          sendEmailConfirmedStatus(reservation.user_id.email, "Đơn đặt bàn của bạn không được chấp nhận 😛😛");
+          sendEmailConfirmedStatus(reservation.user_id.email, htmlContent2);
         return res.status(201).json({ message: "Hủy đơn đặt bàn thành công!" });
       }
 
@@ -410,6 +441,5 @@ class ReservationController {
       return res.status(500).json({ message: "Internal Server Error" });
     }
   };
-
 }
 export default ReservationController;
