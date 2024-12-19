@@ -20,14 +20,14 @@ class SetComboController {
       );
       if (!setCombosWithProducts || setCombosWithProducts.length === 0) {
         return res.status(404).json({
-          message: "No set combos found",
+          message: "Không tìm thấy combo",
         });
       }
 
       return res.status(200).json(setCombosWithProducts);
     } catch (error) {
       return res.status(500).json({
-        message: "Get all set combos failed",
+        message: "Lấy tất cả combo thất bại",
         error: error.message,
       });
     }
@@ -39,7 +39,7 @@ class SetComboController {
 
       if (!setCombo) {
         return res.status(404).json({
-          message: "Set combo not found",
+          message: "Không tìm thấy combo",
         });
       }
 
@@ -53,7 +53,7 @@ class SetComboController {
       });
     } catch (error) {
       return res.status(500).json({
-        message: "Get set combo detail failed",
+        message: "Lấy chi tiết combo thất bại",
         error: error.message,
       });
     }
@@ -64,7 +64,7 @@ class SetComboController {
       const existingCombo = await SetCombo.findOne({ name: req.body.name });
       if (existingCombo) {
         return res.status(400).json({
-          message: "The setCombo name already exists",
+          message: "Tên combo đã tồn tại",
         });
       }
 
@@ -91,7 +91,7 @@ class SetComboController {
       });
     } catch (error) {
       return res.status(500).json({
-        message: "Create setCombo failed",
+        message: "Tạo combo thất bại",
         error: error.message,
       });
     }
@@ -105,7 +105,7 @@ class SetComboController {
       });
       if (existingCombo) {
         return res.status(400).json({
-          message: "The set combo name already exists",
+          message: "Tên combo đã tồn tại",
         });
       }
 
@@ -141,7 +141,7 @@ class SetComboController {
       });
     } catch (error) {
       return res.status(500).json({
-        message: "Update set combo failed",
+        message: "Cập nhật combo thất bại",
         error: error.message,
       });
     }
@@ -153,18 +153,18 @@ class SetComboController {
 
       if (!setCombo) {
         return res.status(404).json({
-          message: "Set combo not found",
+          message: "Không tìm thấy combo",
         });
       }
 
       await SetComboProduct.deleteMany({ combo_id: req.params.id });
 
       return res.status(200).json({
-        message: "Set combo deleted successfully",
+        message: "Xóa combo thành công",
       });
     } catch (error) {
       return res.status(500).json({
-        message: "Delete set combo failed",
+        message: "Xóa combo thất bại",
         error: error.message,
       });
     }
