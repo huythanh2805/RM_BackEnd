@@ -86,11 +86,11 @@ app.use("/api", paymentRoute);
 
 app.use(feedbackRoute);
 
-app.use(express.static(path.join(__dirname, "build")));
+app.use(express.static(path.join(__dirname, "dist")));
 
 // All routes should return the index.html
 app.get("*", (req, res) => {
-  res.sendFile(path.resolve(__dirname, "build", "index.html"));
+  res.sendFile(path.resolve(__dirname, "dist", "index.html"));
 });
 //cron
 startCronJob();
