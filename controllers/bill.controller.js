@@ -255,8 +255,6 @@ class BillController {
       const original_money = hihi[1];
       const discount_money = hihi[2];
       const depositMoney = hihi[3];
-      const result = depositMoney.slice(0, -2);
-
       const transferAmount = req?.body?.transferAmount;
       if (!transferAmount) {
         return res.status(400).send("Transfer amount not found");
@@ -266,7 +264,7 @@ class BillController {
         transferAmount,
         original_money,
         discount_money,
-        result
+        depositMoney
       );
       // Create a new notification
       const notification = new notifications({
