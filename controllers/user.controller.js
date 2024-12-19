@@ -225,7 +225,7 @@ class UserController {
     user.resetPasswordExpires = tokenExpiry;
     await user.save();
     // Tạo liên kết đặt lại mật khẩu
-    const resetUrl = `http://localhost:4444/reset-password/${resetToken}`;
+    const resetUrl = `https://golden-fork.onrender.com/reset-password/${resetToken}`;
     console.log("Reset URL:", resetUrl);
     // Cấu hình nội dung email
     const mailOptions = {
