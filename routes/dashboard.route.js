@@ -3,13 +3,14 @@ import {
      getReservationStatusCount,
      getRevenueDashboard,
      getTop5OrderedDishes,
-     getTotalRevenueByMonth } from "../controllers/dashboard.controller.js";
+     getTop5OUserOrder,
+} from "../controllers/dashboard.controller.js";
 const router = express.Router();
 
 
-router.get("/dashboard/revenue/6months/:month/:year", getTotalRevenueByMonth);
-router.get("/dashboard/revenue/:month/:year", getRevenueDashboard);
-router.get("/dashboard/top5/:month/:year", getTop5OrderedDishes);
-router.get("/dashboard/reservationState/:month/:year", getReservationStatusCount);
+router.post("/dashboard/revenue", getRevenueDashboard);
+router.post("/dashboard/top5", getTop5OrderedDishes);
+router.post("/dashboard/reservationState", getReservationStatusCount);
+router.post("/dashboard/top5User", getTop5OUserOrder);
 
 export default router;
