@@ -1,36 +1,27 @@
 import mongoose from "mongoose";
 
-const feedBackSchame = new mongoose.Schema(
-  {
+const feedBackSchame = new mongoose.Schema({
     comment: {
-      type: String,
-      required: true,
+        type: String,
+        required: true
     },
     rating: {
-      type: Number,
-      required: true,
+        type: Number,
+        required: true
     },
     user_id: {
-      type: mongoose.Schema.ObjectId,
-      ref: "user",
+        type: mongoose.Schema.ObjectId,
+        ref: 'location'
     },
     dish_id: {
-      type: mongoose.Schema.ObjectId,
-      ref: "dish",
+        type: mongoose.Schema.ObjectId,
+        ref: 'location'
     },
-    setcombo_id: {
-      type: mongoose.Schema.ObjectId,
-      ref: "setCombo",
-    },
-    isShow: {
-      type: Boolean,
-      default: true,
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
 
-export default mongoose.models.feedback ||
-  mongoose.model("feedback", feedBackSchame);
+}, 
+{
+    timestamps: true
+}
+)
+
+export default mongoose.models.feedback || mongoose.model("feedback", feedBackSchame)
