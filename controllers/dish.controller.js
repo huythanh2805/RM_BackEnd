@@ -105,13 +105,11 @@ class DishController {
   async deleteDish(req, res) {
     try {
       const dish = await Dish.findByIdAndDelete(req.params.id);
-
       if (!dish) {
         return res.status(404).json({
           message: "Không tìm thấy món ăn",
         });
       }
-
       return res.status(200).json({
         message: "Xóa món ăn thành công",
       });
