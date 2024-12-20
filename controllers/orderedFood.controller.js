@@ -28,17 +28,18 @@ class OrderedFoodController {
       });
       // const detail = await OrderedCombo.find({reservation_id: reservationId})
       // console.log("OrderedCombos:", detail);
-
+   console.log({orderedFoods})
       const combos = orderedCombos.map((combo) => {
-        const { _id, ...rest } = combo.setComboProduct_id.combo_id;
+        if(!combo.setComboProduct_id) return {...combo._doc, type: "combo", dish_id: null}
+        const { _id, ...rest } = combo.setComboProduct_id?.combo_id;
         return {
           ...rest._doc,
           ...combo._doc,
-          dish_id: { ...combo.setComboProduct_id.combo_id._doc },
+          dish_id: { ...combo.setComboProduct_id.combo_id?._doc },
           type: "combo",
         };
       });
-      const foods = orderedFoods.map((food) => ({ ...food.dish_id._doc, ...food._doc, type: "dish" }));
+      const foods = orderedFoods.map((food) => ({ ...food.dish_id?._doc, ...food._doc, type: "dish" }));
       return res.status(201).json([...combos, ...foods]);
     } catch (error) {
       console.log("Inventories_Error", error);
