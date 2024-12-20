@@ -11,9 +11,7 @@ class CategoryController {
         });
       }
 
-      return res.status(200).json({
-        data: categories,
-      });
+      return res.status(200).json(categories);
     } catch (error) {
       return res.status(500).json({
         message: "Lấy tất cả danh mục thất bại",
@@ -32,9 +30,7 @@ class CategoryController {
         });
       }
 
-      return res.status(200).json({
-        data: category,
-      });
+      return res.status(200).json(category);
     } catch (error) {
       return res.status(500).json({
         message: "Lấy chi tiết danh mục thất bại",
@@ -56,9 +52,7 @@ class CategoryController {
 
       const category = await Category.create(req.body);
 
-      return res.status(201).json({
-        data: category,
-      });
+      return res.status(201).json(category);
     } catch (error) {
       return res.status(500).json({
         message: "Tạo danh mục thất bại",
@@ -93,9 +87,7 @@ class CategoryController {
         });
       }
 
-      return res.status(200).json({
-        data: category,
-      });
+      return res.status(200).json(category);
     } catch (error) {
       return res.status(500).json({
         message: "Cập nhật danh mục thất bại",
@@ -125,5 +117,5 @@ class CategoryController {
     }
   }
 }
-
+ 
 export default CategoryController;

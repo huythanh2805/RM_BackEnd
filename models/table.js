@@ -5,7 +5,7 @@ const tableSchame = new mongoose.Schema({
         type: String,
         default: "Table_Name",
         required: true
-    },
+    }, 
     order: {
         type: Number,
         required: true

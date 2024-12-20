@@ -5,7 +5,7 @@ const shiftSchame = new mongoose.Schema({
         type: String,
         default: "Table_Name",
         required: true
-    },
+    }, 
     startTime: {
         type: Date,
     },

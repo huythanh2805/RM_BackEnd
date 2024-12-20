@@ -1,5 +1,5 @@
-import mongoose from "mongoose"
-
+import mongoose from "mongoose";
+ 
 const reservationSchame = new mongoose.Schema(
   {
     table_id: {
@@ -10,13 +10,19 @@ const reservationSchame = new mongoose.Schema(
       type: mongoose.Schema.ObjectId,
       ref: "user",
     },
+    userName: {
+      type: String,
+    },
     phoneNumber: {
-        type: String
+      type: String,
+    },
+    detailAddress: {
+      type: String,
     },
     guests_count: {
-        type: Number,
-        default: 1,
-      },
+      type: Number,
+      default: 1,
+    },
     ordered_dishes: [
       {
         type: mongoose.Schema.ObjectId,
@@ -29,15 +35,32 @@ const reservationSchame = new mongoose.Schema(
         ref: "orderedCombo",
       },
     ],
+    userDiscountId: {
+      type: mongoose.Schema.ObjectId,
+      ref: "userDiscount",
+    },
+    deposit: {
+      type: Number,
+      default: 0,
+    },
     status: {
       type: String,
-      enum: ["ISWAITING","ISCOMFIRMED", "SEATED", "COMPLETED", "CANCELED"],
+      enum: ["ISWAITING", "ISCOMFIRMED", "SEATED", "COMPLETED", "CANCELED"],
       default: "ISWAITING",
     },
-    reservation_time: {
-        type: Date,
+    startTime: {
+      type: Date,
     },
     isOrderedOnline: {
+      type: Boolean,
+      default: false,
+    },
+    payment_method: {
+      type: String,
+      enum: ["CASH", "MOMO","ZALOPAY"],
+      default: "CASH",
+    },
+    isUsedDiscount: {
       type: Boolean,
       default: false
     }
@@ -45,6 +68,6 @@ const reservationSchame = new mongoose.Schema(
   {
     timestamps: true,
   }
-)
+);
 
-export default mongoose.models.reservation || mongoose.model("reservation", reservationSchame)
+export default mongoose.models.reservation || mongoose.model("reservation", reservationSchame);

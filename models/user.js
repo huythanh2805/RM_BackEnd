@@ -9,7 +9,7 @@ const UserSchame = new mongoose.Schema(
     },
     password: {
       type: String,
-    },
+    }, 
     userName: {
       type: String,
       required: true,
@@ -18,8 +18,8 @@ const UserSchame = new mongoose.Schema(
       type: String,
     },
     phoneNumber: {
-      type: Number,
-      required: true,
+      type: String,
+      required: false,
     },
     address: {
       type: String,
@@ -34,10 +34,14 @@ const UserSchame = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    provider: { type: String, required: false },
+    resetPasswordToken: { type: String }, // Thêm trường này
+    resetPasswordExpires: { type: Date },
+    isdelete: { type: Number, default: 0 }, // Thêm trường này
   },
   {
     timestamps: true,
   }
 );
 
-export default mongoose.models?.user || mongoose.model("User", UserSchame);
+export default mongoose.models?.user || mongoose.model("user", UserSchame);

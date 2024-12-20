@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+ 
 const employeeSchame = new mongoose.Schema({
     password: {
         type: String,

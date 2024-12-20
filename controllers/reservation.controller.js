@@ -336,7 +336,7 @@ class ReservationController {
         error: error.message,
       });
     }
-  };
+  }; 
   // Reselect table
   reselectTable = async (req, res) => {
     const { reservation_id, table_id } = req.body;

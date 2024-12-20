@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+  
 const billDishSchame = new mongoose.Schema({
     name: {
         type: String,
@@ -17,18 +17,12 @@ const billDishSchame = new mongoose.Schema({
     desc: {
         type: String,
     },
-    isShow: {
-        type: Boolean,
-    },
-    category_id: {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: 'category',
-    },
     quantity: {
         type: Number,
         default: 1,
         required: true
     },
+    
 }, 
 {
     timestamps: true

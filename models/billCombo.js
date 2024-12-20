@@ -1,10 +1,9 @@
 import mongoose from "mongoose";
-
+ 
 const billComboSchame = new mongoose.Schema({
     name: {
         type: String,
         required: true,
-        unique: true
     },
     price: {
         type: Number,
@@ -18,10 +17,6 @@ const billComboSchame = new mongoose.Schema({
     ],
     desc: {
         type: String,
-    },
-    isShow: {
-        type: Boolean,
-        default: true
     },
     quantity: {
         type: Number,

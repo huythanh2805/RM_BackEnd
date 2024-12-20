@@ -7,7 +7,7 @@ const workScheduleSchame = new mongoose.Schema({
     },
     week_1: {
         type: mongoose.Schema.ObjectId,
-        ref: "shift",
+        ref: "shift", 
     },
     week_2: {
         type: mongoose.Schema.ObjectId,
