@@ -268,7 +268,7 @@ class BillController {
       );
       // Create a new notification
       const notification = new notifications({
-        title: "Thanh toán thành công",
+        title: "Thanh toán thành công !",
         message: `Đơn đặt bàn ${transactionCode} đã được thanh toán thành công.`,
       });
 
