@@ -5,7 +5,7 @@ const userDiscountSchame = new mongoose.Schema({
         type: String,
         unique: true,
         required: true
-    },
+    }, 
     userId: {
         type: mongoose.SchemaTypes.ObjectId,
         ref: 'user',

@@ -19,5 +19,5 @@ const reservationRoute = (io) => {
   router.patch("/reservations/select", reservationController.selectTable);
   return router;
 };
-
+ 
 export default reservationRoute;

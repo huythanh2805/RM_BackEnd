@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+ 
 const discountSchame = new mongoose.Schema({
     discountType: {
         type: String,

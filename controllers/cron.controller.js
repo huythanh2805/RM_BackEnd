@@ -1,7 +1,7 @@
 import cron from "node-cron";
 import discount from "../models/discount.js";
 import Reservation from "../models/reservation.js";
-
+ 
 export const cancelPastReservations = async () => {
   try {
     const now = new Date();

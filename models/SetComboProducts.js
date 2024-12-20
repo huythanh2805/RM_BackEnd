@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const setComboProductSchame = new mongoose.Schema({
+const setComboProductSchame = new mongoose.Schema({ 
     dishes: [
         {
             type: mongoose.SchemaTypes.ObjectId,

@@ -2,7 +2,7 @@ import Bill from "../models/bill.js"
 import BillDish from "../models/billDish.js"
 import Reservation from "../models/reservation.js"
 import { transformBills, transformReservationStatusQuantity } from "../uitls/Dashboard.js"
-
+ 
 const getRevenueDashboard = async (req, res) => {
   const { startDate, endDate } = req.body
   try {

@@ -10,5 +10,5 @@ router.post("/discount", createDiscount);
 router.delete("/discount/deleteAll", deleteAll);
 router.delete("/discount/:id", deleteDiscountById);
 router.patch("/discount/:id", updateDiscountById);
-
+ 
 export default router;

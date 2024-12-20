@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+  
 const billDishSchame = new mongoose.Schema({
     name: {
         type: String,

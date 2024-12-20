@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+ 
 const conversationSchame = new mongoose.Schema({
     userId: {
         type: mongoose.Schema.ObjectId, 

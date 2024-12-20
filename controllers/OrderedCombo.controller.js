@@ -1,6 +1,6 @@
 import OrderedCombo from "../models/orderedCombo.js"
 import Reservation from "../models/reservation.js"
-import SetComboProduct from "../models/SetComboProducts.js";
+import SetComboProduct from "../models/SetComboProducts.js"; 
 class OrderedComboController {
   // Get all
   getAllCombo = async (req, res) => {

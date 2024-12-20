@@ -1,6 +1,6 @@
 import Discount from "../models/discount.js";
 import userDiscount from "../models/userDiscount.js";
-
+ 
 const createDiscount = async (req, res) => {
   try {
     // Lấy dữ liệu từ body của request

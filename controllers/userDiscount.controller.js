@@ -5,7 +5,7 @@ import Reservation from "../models/reservation.js";
 import UserDiscount from "../models/userDiscount.js";
 const createUserDiscount = async (req, res) => {
   const { discountId, userId } = req.body;
-
+ 
   try {
     // Kiểm tra discountId và userId có hợp lệ không
     if (!mongoose.Types.ObjectId.isValid(discountId) || !mongoose.Types.ObjectId.isValid(userId)) {

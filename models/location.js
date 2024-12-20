@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+ 
 const locationSchame = new mongoose.Schema({
     locationInRestaurant: {
         type: String,

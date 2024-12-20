@@ -1,6 +1,6 @@
 import OrderedCombo from "../models/orderedCombo.js";
 import OrderedDish from "../models/orderedDish.js";
-import Reservation from "../models/reservation.js";
+import Reservation from "../models/reservation.js"; 
 class OrderedFoodController {
   // Get all
   getAllOrderedFood = async (req, res) => {

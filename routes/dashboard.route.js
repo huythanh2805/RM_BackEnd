@@ -12,5 +12,5 @@ router.post("/dashboard/revenue", getRevenueDashboard);
 router.post("/dashboard/top5", getTop5OrderedDishes);
 router.post("/dashboard/reservationState", getReservationStatusCount);
 router.post("/dashboard/top5User", getTop5OUserOrder);
-
+ 
 export default router;

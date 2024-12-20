@@ -14,7 +14,7 @@ const billSchame = new mongoose.Schema(
     original_money: {
       type: Number,
       required: true,
-    },
+    }, 
     VAT: {
       type: Number,
       default: 5,

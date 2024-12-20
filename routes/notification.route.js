@@ -9,5 +9,5 @@ const notifications = new NotificationsController();
 // Các route xử lý thông báo
 router.put("/notification/:id", notifications.markNotificationAsRead);
 router.get("/notification", notifications.getNotifications);
-
+ 
 export default router;

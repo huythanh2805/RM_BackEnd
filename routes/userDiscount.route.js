@@ -8,5 +8,5 @@ router.get("/userDiscount/reservation/admin/:code/:totalPrice/:reservationId", g
 router.get("/userDiscount/reservation/:reservationId", getUserDiscountByReservationId);
 router.post("/userDiscount", createUserDiscount);
 router.get("/userDiscount/:userId", getAllUserDiscount);
-
+ 
 export default router;

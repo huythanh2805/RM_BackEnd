@@ -1,6 +1,6 @@
 import Table from "../models/table.js"
 class TableController {
-  // Get all tables
+  // Get all tables 
   async getAlltables(req, res) {
     try {
       const tables = await Table.find({}).sort({ order: 1 })

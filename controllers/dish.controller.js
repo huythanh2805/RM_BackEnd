@@ -50,7 +50,6 @@ class DishController {
           message: "Tên món ăn đã tồn tại",
         });
       }
-
       const images = req.files
         ? req.files.map((file) => file.path)
         : req.body.images;

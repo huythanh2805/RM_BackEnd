@@ -10,7 +10,6 @@ import {
      updateMessagesToSeen
 } from '../controllers/Message.controller.js'
 
-
 router.get("/message/v2/:conversationId", getMessagesByConversationId);
 router.get("/message/text/seen/:userId/client", getUnseenMessageCountClient);
 router.get("/message/text/seen/:adminId/admin", getUnseenMessageCountAdmin);

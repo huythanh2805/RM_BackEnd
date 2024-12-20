@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+ 
 const messageSchame = new mongoose.Schema({
     senderId: {
         type: mongoose.Schema.ObjectId, 

@@ -1,5 +1,5 @@
 import Feedback from "../models/feedback.js";
-
+ 
 class FeedbackController {
   async getAllFeedback(req, res) {
     try {

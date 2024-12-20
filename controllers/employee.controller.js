@@ -1,5 +1,5 @@
 import Employee from "../models/employee.js";
-
+ 
 class EmployeeController {
   async getAllEmployees(req, res) {
     try {

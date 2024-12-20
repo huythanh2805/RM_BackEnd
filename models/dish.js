@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-
+ 
 const dishSchame = new mongoose.Schema({
     name: {
         type: String,

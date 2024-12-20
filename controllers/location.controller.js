@@ -1,6 +1,6 @@
 import Location from "../models/location.js"
 import Table from "../models/table.js"
-class LocationController {
+class LocationController { 
   async getAllLocation(req, res) {
     try {
         const locations = (await Location

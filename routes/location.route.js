@@ -10,5 +10,5 @@ router.post("/locations", locationController.addNewLocation);
 router.put("/locations", locationController.updateLocationOrder);
 router.patch("/locations/:id", locationController.updateLocationInformation);
 router.delete("/locations/:id", locationController.deleteLocation);
-
+ 
 export default router;

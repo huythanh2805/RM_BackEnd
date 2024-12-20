@@ -9,7 +9,7 @@ const billRouter = (io) => {
   router.post("/bills", billController.createBill);
   router.get("/bills", billController.getAll);
   router.post("/webhook/seepay", billController.payment);
-  return router;
+  return router; 
 };
 
 export default billRouter;

@@ -1,5 +1,5 @@
 import Notifications from "../models/notifications.js";
-
+ 
 class NotificationsController {
   // Lấy danh sách thông báo cho admin
   async getNotifications(req, res) {
