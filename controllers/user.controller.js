@@ -271,7 +271,7 @@ class UserController {
   //list user accounts
   async getListUsers(req, res) {
     try {
-      const users = await User.find({ isdelete: 0, role: "CLIENT" });
+      const users = await User.find({ isdelete: 0});
       return res.status(200).json({ users });
     } catch (error) {
       console.error("Lỗi lấy danh sách người dùng:", error);
