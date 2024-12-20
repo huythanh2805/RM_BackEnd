@@ -239,7 +239,7 @@ class BillController {
       throw error;
     }
   };
- 
+
   payment = async (req, res) => {
     try {
       console.log("Webhook received:", req.body);
@@ -254,7 +254,8 @@ class BillController {
       const transactionCode = hihi[0];
       const original_money = hihi[1];
       const discount_money = hihi[2];
-      const depositMoney = hihi[3];
+      const depositMoney = hihi[3] || 0;
+      console.log(depositMoney);
       const transferAmount = req?.body?.transferAmount;
       if (!transferAmount) {
         return res.status(400).send("Transfer amount not found");
