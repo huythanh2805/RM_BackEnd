@@ -38,7 +38,7 @@ const server = http.createServer(app);
 
 export const io = new Server(server, {
   cors: {
-    origin: "http://localhost:4444", // Địa chỉ frontend
+    origin: "https://golden-fork.onrender.com", // Địa chỉ frontend
     methods: ["GET", "POST"],
   },
 });
