@@ -1,6 +1,8 @@
 import OrderedCombo from "../models/orderedCombo.js";
 import OrderedDish from "../models/orderedDish.js";
 import Reservation from "../models/reservation.js"; 
+import OrderDishHistory from "../models/order-dish-history.js";
+import { generateUUID } from "../uitls/GenerateUUID.js";
 class OrderedFoodController {
   // Get all
   getAllOrderedFood = async (req, res) => {
@@ -48,14 +50,21 @@ class OrderedFoodController {
   };
   // add new
   addNewOrderedDish = async (req, res) => {
-    const { dish_id, reservation_id } = req.body;
+    const { dish_id, reservation_id, user_id } = req.body;
     if (!reservation_id || !dish_id) return res.status(401).json({ message: "All fields are required" });
     try {
+      const code = generateUUID()
       const orderedFood = await OrderedDish.create({
+        code,
         reservation_id,
         dish_id,
       });
-
+      await OrderDishHistory.create({
+        code,
+        reservation_id,
+        changer_id: user_id,
+        ordered_dish: orderedFood._doc._id
+      })
       await Reservation.findByIdAndUpdate(
         reservation_id,
         { $push: { ordered_dishes: orderedFood._doc._id } } // Dùng toán tử $push để thêm vào mảng
@@ -109,51 +118,24 @@ class OrderedFoodController {
   // Update status orderedDish
   updateOrderedDishesStatus = async (req, res) => {
     try {
-      const { selectedRows, statusValue } = req.body; // Lấy dữ liệu từ body
-
-      if (!Array.isArray(selectedRows) || !selectedRows.length) {
-        return res.status(400).json({ message: "Invalid selectedRows array" });
-      }
-
-      if (!statusValue) {
-        return res.status(400).json({ message: "Invalid statusValue" });
-      }
-
-      // Cập nhật tất cả OrderedDish có _id nằm trong mảng selectedRows
-      const result = await OrderedDish.updateMany(
-        { _id: { $in: selectedRows } }, // Điều kiện tìm kiếm
-        { $set: { status: statusValue } } // Cập nhật status
-      );
-
+     const {orderedFoodId, newStatus, reservation_id, changer_id, code} = req.body
+     if(!orderedFoodId) return res.status(401).json({message: "Id is not existed"});
+       const orderedDish = await OrderedDish.findById(orderedFoodId)
+       await OrderedDish.findByIdAndUpdate(orderedFoodId, {status: newStatus}, {new: true})
+       await OrderDishHistory.create({
+              code,
+              reservation_id,
+              changer_id,
+              ordered_dish: orderedFoodId,
+              currentStatus: newStatus,
+              previousStatus: orderedDish._doc.status
+       })
       // Trả về kết quả sau khi cập nhật
-      return res.status(200).json({
-        message: `${result.modifiedCount} dishes updated successfully.`,
-      });
+      return res.status(200).json({message: "Successfully!"});
     } catch (error) {
-      return res.status(500).json({ message: "Error updating dishes", error });
+      return res.status(500).json({ message: "Error updating ordered dish", error });
     }
   };
-  // delete  orderedDish by array id
-  //  deleteOrderedFoodByArrayId = async (req, res) => {
-  //   try {
-  //     const { selectedRows, statusValue } = req.body; // Lấy dữ liệu từ body
-
-  //     if (!Array.isArray(selectedRows) || !selectedRows.length) {
-  //       return res.status(400).json({ message: 'Invalid selectedRows array' });
-  //     }
-
-  //     const result = await OrderedDish.deleteMany({
-  //       _id: { $in: selectedRows },
-  //     });
-
-  //     // Trả về kết quả sau khi cập nhật
-  //     return res.status(200).json({
-  //       message: `${result.modifiedCount} dishes updated successfully.`,
-  //     });
-  //   } catch (error) {
-  //     return res.status(500).json({ message: 'Error updating dishes', error });
-  //   }
-  // };
 }
 
 export default OrderedFoodController;

@@ -1,6 +1,11 @@
 import mongoose from "mongoose";
- 
+ import { generateUUID } from "../uitls/GenerateUUID.js"
 const orderedDishSchame = new mongoose.Schema({
+    code: {
+        type: String,
+        required: true,
+        default: () => generateUUID()
+    },
     dish_id: {
         type: mongoose.Schema.ObjectId,
         ref: 'dish'
@@ -16,8 +21,8 @@ const orderedDishSchame = new mongoose.Schema({
     },
     status: {
       type: String,
-      enum: ["ISPREPARED", "ISCOMPLETED", "ISCANCELED"],
-      default: "ISPREPARED",
+      enum: ["ORDERED","ISPREPARED", "ISCOMPLETED", "ISCANCELED"],
+      default: "ORDERED",
     }
 }, 
 {

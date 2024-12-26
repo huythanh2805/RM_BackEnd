@@ -1,10 +1,6 @@
 import mongoose from "mongoose";
  
 const employeeSchame = new mongoose.Schema({
-    password: {
-        type: String,
-        required: true
-    },
     phoneNumber: {
         type: String,
         required: true
@@ -20,6 +16,10 @@ const employeeSchame = new mongoose.Schema({
     workPosition: {
         type: String,
         required: true,
+    },
+    salary: {
+        type: String,
+        required: true
     },
     employStatus: {
         type: String,

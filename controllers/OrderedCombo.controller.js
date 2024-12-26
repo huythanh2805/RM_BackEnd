@@ -1,6 +1,8 @@
 import OrderedCombo from "../models/orderedCombo.js"
 import Reservation from "../models/reservation.js"
-import SetComboProduct from "../models/SetComboProducts.js"; 
+import SetComboProduct from "../models/SetComboProducts.js";
+import OrderDishHistory from "../models/order-dish-history.js"; 
+import { generateUUID } from "../uitls/GenerateUUID.js";
 class OrderedComboController {
   // Get all
   getAllCombo = async (req, res) => {
@@ -32,18 +34,26 @@ class OrderedComboController {
   }
   // add new
   addNewOrderedCombo = async (req, res) => {
-    const { dish_id, reservation_id } = req.body
+    const { dish_id, reservation_id , user_id} = req.body
     if (!reservation_id || !dish_id)
       return res.status(401).json({ message: "All fields are required" })
     try {
-      const orderedFood = await OrderedCombo.create({
-        reservation_id,
-        setComboProduct_id: dish_id,
-      })
-       await Reservation.findByIdAndUpdate(
-        reservation_id,
-        { $push: { ordered_combos : orderedFood._doc._id } }, // Dùng toán tử $push để thêm vào mảng
-    );
+        const code = generateUUID()
+        const orderedFood = await OrderedCombo.create({
+          code,
+          reservation_id,
+          setComboProduct_id: dish_id,
+        })
+         await OrderDishHistory.create({
+           code,
+           reservation_id,
+           changer_id: user_id,
+           ordered_combo: orderedFood._doc._id,
+         })
+         await Reservation.findByIdAndUpdate(
+           reservation_id,
+           { $push: { ordered_combos: orderedFood._doc._id } } // Dùng toán tử $push để thêm vào mảng
+         )
     // populate 
     const combo = await OrderedCombo.findById(orderedFood._id).populate({
       path: 'setComboProduct_id',
@@ -73,23 +83,25 @@ class OrderedComboController {
   } 
   // Update ordered conbo
   async updateOrderCombo(req, res) {
-    const orderedDish_id = req.params.orderedDishId
-    const { quantity } = req.body
-    if (!orderedDish_id)
-      return res
-        .status(401)
-        .json({ message: "There is no Id to update ordered dish" })
-    if (!quantity)
-      return res.status(401).json({ message: "All data are required" })
+    const {orderedFoodId, newStatus, reservation_id, code, changer_id} = req.body
+    if (!orderedFoodId)  return res.status(401).json({ message: "Id is not existed" })
+    console.log(req.body)
     try {
-        await OrderedCombo.findByIdAndUpdate(
-        { _id: orderedDish_id },
-        { quantity: quantity },
-        { new: true }
+      const orderedCombo = await OrderedCombo.findById(orderedFoodId)
+      await OrderedCombo.findByIdAndUpdate(
+        orderedFoodId,
+      { status: newStatus },
+      { new: true }
       )
-      return res
-        .status(201)
-        .json({ message: "Update Successfully!"})
+      await OrderDishHistory.create({
+        code,
+        reservation_id,
+        changer_id,
+        ordered_combo: orderedFoodId,
+        currentStatus: newStatus,
+        previousStatus: orderedCombo._doc.status
+      })
+      return res.status(201).json({ message: "Successfully"})
     } catch (error) {
       console.log("Inventories_Error", error)
       return res.status(500).json({ message: "Internal Server Error" })

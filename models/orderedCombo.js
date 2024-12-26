@@ -1,6 +1,12 @@
 import mongoose from "mongoose";
+import { generateUUID } from "../uitls/GenerateUUID.js"
  
 const OrderedComboSchame = new mongoose.Schema({
+    code: {
+        type: String,
+        required: true,
+        default: () => generateUUID()
+    },
     setComboProduct_id: {
         type: mongoose.Schema.ObjectId,
         ref: 'setComboProduct'
@@ -16,8 +22,8 @@ const OrderedComboSchame = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["ISPREPARED", "ISCOMPLETED", "ISCANCELED"],
-        default: "ISPREPARED",
+        enum: ["ORDERED", "ISPREPARED", "ISCOMPLETED", "ISCANCELED"],
+        default: "ORDERED",
       }
 }, 
 {

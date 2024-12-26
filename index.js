@@ -26,6 +26,7 @@ import setComboRoute from "./routes/setCombo.route.js";
 import tableRoute from "./routes/table.route.js";
 import userRoutes from "./routes/user.route.js";
 import userDiscountRoute from "./routes/userDiscount.route.js";
+import orderDishHistoryRoute from "./routes/order-dish-history.route.js";
 
 // .env
 dotenv.config();
@@ -83,8 +84,10 @@ app.use("/api", discountRoute);
 app.use("/api", userDiscountRoute);
 // momo route
 app.use("/api", paymentRoute);
-
+// feedback route
 app.use(feedbackRoute);
+// orderDishHistoryRoute route
+app.use(orderDishHistoryRoute);
 
 //cron
 startCronJob();

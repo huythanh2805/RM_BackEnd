@@ -227,6 +227,46 @@ class ReservationController {
       return res.status(500).json({ message: "Internal Server Error" });
     }
   };
+  // Lấy tất cả đơn đặt bàn đang có trạng thái là đang hoạt động
+  getAllActiveReservation = async (req, res) => {
+    try {
+      const reservations = await Reservation.find({ status: "SEATED"})
+        .populate({
+          path: 'ordered_dishes',
+          model: "orderedDish",
+          populate: {
+            path: 'dish_id',
+            model: 'dish'
+          }
+        })
+        .populate({
+          path: 'ordered_combos',
+          model: "orderedCombo",
+          populate: {
+            path: 'setComboProduct_id',
+            model: 'setComboProduct',
+            populate: {
+              path: 'combo_id',
+              model: 'setCombo'
+            }
+          }
+        })
+        .populate({
+          path: 'table_id',
+          model: 'table'
+        })
+        .sort({ createdAt: -1 });
+
+      if (!reservations || reservations.length === 0) {
+        return res.status(404).json({ message: "No reservations found for this user" });
+      }
+
+      return res.status(200).json(reservations);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+  };
   // add new reservation client
   createClientReservation = async (req, res) => {
     const { startTime, dishs, user_id, guests_count, phoneNumber, userName, couponValue, deposit, isPayment, status, isOrderedOnline } =
