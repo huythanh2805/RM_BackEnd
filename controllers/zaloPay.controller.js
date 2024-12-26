@@ -26,7 +26,7 @@ export const createZaloTransaction = async (req, res) => {
   const { totalPrice, ...rest } = req.body;
   const embed_data = {
     //sau khi hoàn tất thanh toán sẽ đi vào link này (thường là link web thanh toán thành công của mình)
-    redirecturl: "https://golden-fork.onrender.com/thanks",
+    redirecturl: "http://localhost:4444/thanks",
     reservation: rest,
   };
   console.log(`${process.env.NGROK_BACKEND_URL}/api/payment/zalo/callback`);
@@ -86,7 +86,7 @@ export const zaloTransactionCallback = async (req, res) => {
   const embed_data = JSON.parse(data.embed_data);
   const { reservation } = embed_data;
   // console.log({embed_data})
-  // console.log({reservation})
+  console.log({reservation})
 
   try {
     let dataStr = req.body.data;

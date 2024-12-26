@@ -5,8 +5,9 @@ const reservationRoute = (io) => {
   const router = express.Router();
   const reservationController = new ReservationController(io); 
 
-  router.get("/reservations/v2/:table_id", reservationController.getReserDetailByTableId);
+  router.get("/reservations/v2/get-active-reservation", reservationController.getAllActiveReservation);
   router.post("/reservations/v2/client", reservationController.createClientReservation);
+  router.get("/reservations/v2/:table_id", reservationController.getReserDetailByTableId);
   router.get("/reservations/user/:userId", reservationController.getReservationsByUser);
   router.get("/reservations/history-detail/:reservation_id", reservationController.getReserDetailById);
   router.put("/reservations/cancel/:reservation_id", reservationController.cancelReservationById);
