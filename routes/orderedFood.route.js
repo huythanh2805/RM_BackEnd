@@ -8,8 +8,8 @@ const orderedFoodController = new OrderedFoodController();
 
 router.get("/orderedFood/:reservationId", orderedFoodController.getAllOrderedFood);
 router.post("/orderedFood", orderedFoodController.addNewOrderedDish);
-router.patch("/orderedFood/:orderedDishId", orderedFoodController.updateOrderedDish);
-router.put("/orderedFood", orderedFoodController.updateOrderedDishesStatus);
+router.patch("/orderedFood", orderedFoodController.updateOrderedDishesStatus);
+// router.put("/orderedFood", orderedFoodController.updateOrderedDishesStatus);
 router.delete("/orderedFood/:orderedDishId/:reservationId", orderedFoodController.deleteOrderedDish);
 
 export default router;

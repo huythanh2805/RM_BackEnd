@@ -5,22 +5,45 @@ const workScheduleSchame = new mongoose.Schema({
         type: mongoose.Schema.ObjectId,
         ref: "employee",
     },
+    month: {
+        type: String
+    },
     week_1: {
-        type: mongoose.Schema.ObjectId,
-        ref: "shift", 
+        type: Number,
+        enum: [1, 2, 3],
+        default: 1
     },
     week_2: {
-        type: mongoose.Schema.ObjectId,
-        ref: "shift",
+        type: Number,
+        enum: [1, 2, 3],
+        default: 1
     },
     week_3: {
-        type: mongoose.Schema.ObjectId,
-        ref: "shift",
+        type: Number,
+        enum: [1, 2, 3],
+        default: 1
     },
     week_4: {
-        type: mongoose.Schema.ObjectId,
-        ref: "shift",
+        type: Number,
+        enum: [1, 2, 3],
+        default: 1
     },
+    // week_1: {
+    //     type: mongoose.Schema.ObjectId,
+    //     ref: "shift", 
+    // },
+    // week_2: {
+    //     type: mongoose.Schema.ObjectId,
+    //     ref: "shift",
+    // },
+    // week_3: {
+    //     type: mongoose.Schema.ObjectId,
+    //     ref: "shift",
+    // },
+    // week_4: {
+    //     type: mongoose.Schema.ObjectId,
+    //     ref: "shift",
+    // },
 }, 
 {
     timestamps: true

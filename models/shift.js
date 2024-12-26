@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
 
 const shiftSchame = new mongoose.Schema({
-    name: {
+    shift: {
         type: String,
-        default: "Table_Name",
+        default: "Ca 1",
         required: true
     }, 
-    startTime: {
+    money: {
         type: Date,
     },
     endTime: {
