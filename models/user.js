@@ -9,7 +9,7 @@ const UserSchame = new mongoose.Schema(
     },
     password: {
       type: String,
-    }, 
+    },
     userName: {
       type: String,
       required: true,
@@ -26,7 +26,7 @@ const UserSchame = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["CLIENT", "ADMIN"],
+      enum: ["CLIENT", "ADMIN", "CASHIER", "WAREHOUSE", "ORDER"],
       default: "CLIENT",
       required: true,
     },
@@ -37,7 +37,6 @@ const UserSchame = new mongoose.Schema(
     provider: { type: String, required: false },
     resetPasswordToken: { type: String }, // Thêm trường này
     resetPasswordExpires: { type: Date },
-    isdelete: { type: Number, default: 0 }, // Thêm trường này
   },
   {
     timestamps: true,
