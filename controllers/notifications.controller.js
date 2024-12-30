@@ -1,5 +1,8 @@
+import KitchenNotify from "../models/kitchenNotify.js";
 import Notifications from "../models/notifications.js";
- 
+import OrderDishHistory from "../models/order-dish-history.js"; 
+import OrderedDish from "../models/orderedDish.js"; 
+import OrderedCombo from "../models/orderedCombo.js"; 
 class NotificationsController {
   // Lấy danh sách thông báo cho admin
   async getNotifications(req, res) {
@@ -14,7 +17,6 @@ class NotificationsController {
       });
     }
   }
-
   // Đánh dấu thông báo đã đọc
   async markNotificationAsRead(req, res) {
     const { id } = req.params;
@@ -39,6 +41,76 @@ class NotificationsController {
       return res.status(500).json({
         success: false,
         message: "Có lỗi xảy ra khi cập nhật trạng thái thông báo.",
+      });
+    }
+  }
+  // Tạo thông báo cho nhà bếp
+  async createNewKitChenNotify(req, res){
+    const {title, message, orderedCode, orderHistoryId} = req.body
+    console.log(req.body)
+    try {
+      const kitchenNotify = await KitchenNotify.create({title, message, orderedCode})
+      if(kitchenNotify) await OrderDishHistory.findByIdAndUpdate(orderHistoryId, {isRequiredToCancel: true})
+      return res.status(200).json(kitchenNotify);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        success: false,
+        message: "Something went wrong on server",
+      });
+    }
+  }
+  // lấy tất cả thông báo cho nhà bếp
+  async getAllKitChenNotify(req, res){
+    try {
+      const kitchenNotify = await KitchenNotify.find({}).sort({createdAt: -1})
+      return res.status(200).json(kitchenNotify);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        success: false,
+        message: "Something went wrong on server",
+      });
+    }
+  }
+  // Cập nhật lại trạng thái của thông báo
+  async updateKitchenNotify(req, res){
+    const {_id, changer_id} = req.body
+    try {
+       const kitchenNotify = await KitchenNotify.findOne({_id})
+       await KitchenNotify.findByIdAndUpdate(_id, {isConfirmed: true})
+      //  Tìm xem có tìm thấy món ăn nào có id trùng với lịch sử món ăn hay không
+       const orderDish = await OrderedDish.findOne({code: kitchenNotify._doc.orderedCode})
+      //  Nếu có thì update lại trạng thái cho món ăn được gọi, không thì update lại trạng thái của combo
+       const orderHistory = await OrderDishHistory.findOne({code: kitchenNotify._doc.orderedCode}).sort({ createdAt: -1 })
+       if(orderDish){
+        await OrderedDish.findOneAndUpdate({code: kitchenNotify._doc.orderedCode}, {status: "ISCANCELED"})
+        await OrderDishHistory.create({
+          code: orderHistory._doc.code,
+          reservation_id: orderHistory._doc.reservation_id,
+          changer_id,
+          ordered_dish: orderHistory._doc.ordered_dish,
+          currentStatus: "ISCANCELED",
+          previousStatus: orderHistory._doc.currentStatus
+          })
+       }else{
+        await OrderedCombo.findOneAndUpdate({code: kitchenNotify._doc.orderedCode}, {status: "ISCANCELED"})
+        await OrderDishHistory.create({
+          code: orderHistory._doc.code,
+          reservation_id: orderHistory._doc.reservation_id,
+          changer_id,
+          ordered_combo: orderHistory._doc.ordered_combo,
+          currentStatus: "ISCANCELED",
+          previousStatus: orderHistory._doc.currentStatus
+          })
+       }
+      
+      return res.status(200).json(kitchenNotify);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({
+        success: false,
+        message: "Something went wrong on server",
       });
     }
   }

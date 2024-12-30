@@ -27,8 +27,18 @@ const getOrderDishHistoryById = async (req, res) => {
               path: 'combo_id',
               model: 'setCombo'
              }
+        }})
+        .populate({
+            path: 'reservation_id',
+            model: 'reservation',
+            select: 'table_id',
+            populate: {
+                path: 'table_id',
+                model: 'table',
+                select: 'name'
             }
-        }).sort({createdAt: 1})
+        })
+        .sort({createdAt: 1})
         return res.status(201).json(orderDishHistories);
     } catch (error) {
         console.log("OrderDishHistoryError: ",error)
