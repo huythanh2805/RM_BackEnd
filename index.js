@@ -14,6 +14,7 @@ import dashBoardRoute from "./routes/dashboard.route.js";
 import discountRoute from "./routes/discount.route.js";
 import dishRoute from "./routes/dish.route.js";
 import employeeRoute from "./routes/employee.route.js";
+import workScheduleRoute from "./routes/workSchedule.route.js";
 import feedbackRoute from "./routes/feedback.route.js";
 import locationRoute from "./routes/location.route.js";
 import messageRoute from "./routes/message.route.js";
@@ -54,6 +55,8 @@ app.use("/users", userRoutes);
 app.use(categoryRoute);
 // employee route
 app.use(employeeRoute);
+// workSchedule route
+app.use(workScheduleRoute);
 // dish route
 app.use(dishRoute);
 // table route

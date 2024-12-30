@@ -207,7 +207,7 @@ class UserController {
       });
     }
   }
- 
+
   // Hàm gửi email đặt lại mật khẩu
   async requestPasswordReset(req, res) {
     console.log("Received request body:", req.body);
@@ -271,7 +271,7 @@ class UserController {
   //list user accounts
   async getListUsers(req, res) {
     try {
-      const users = await User.find({ isdelete: 0});
+      const users = await User.find();
       return res.status(200).json({ users });
     } catch (error) {
       console.error("Lỗi lấy danh sách người dùng:", error);
@@ -280,7 +280,7 @@ class UserController {
   }
   // add user
   async addUser(req, res) {
-    const { email, password, userName, phoneNumber, address } = req.body;
+    const { email, password, userName, phoneNumber, address, role } = req.body;
     console.log(req.body);
     let image;
     if (!email || !password || !userName || !phoneNumber) {
@@ -316,7 +316,7 @@ class UserController {
         password: hashedPassword,
         userName,
         phoneNumber,
-        role: "ADMIN",
+        role,
         image, // Lưu URL của hình ảnh nếu có
         address,
       });
@@ -395,13 +395,11 @@ class UserController {
     }
     try {
       console.log("User ID:", id);
-      const user = await User.findByIdAndUpdate(id, { isdelete: 1 }, { new: true });
+      const user = await User.findByIdAndDelete(id);
       console.log("Updated User:", user);
-
       if (!user) {
         return res.status(404).json({ message: "Người dùng không tồn tại" });
       }
-
       return res.status(200).json({ message: "Người dùng đã được đánh dấu là đã xóa." });
     } catch (error) {
       return res.status(500).json({ message: "Lỗi khi đánh dấu người dùng là đã xóa", error });
@@ -409,23 +407,23 @@ class UserController {
   }
 
   //get user by id
-  async deleteUser(req, res) {
-    const { id } = req.params;
-    if (!id) {
-      return res.status(400).json({ message: "ID người dùng không hợp lệ" });
-    }
-    try {
-      const user = await User.findById(id);
-      console.log("Updated User:", user);
+  // async deleteUser(req, res) {
+  //   const { id } = req.params;
+  //   if (!id) {
+  //     return res.status(400).json({ message: "ID người dùng không hợp lệ" });
+  //   }
+  //   try {
+  //     const user = await User.findById(id);
+  //     console.log("Updated User:", user);
 
-      if (!user) {
-        return res.status(404).json({ message: "Người dùng không tồn tại" });
-      }
-      return res.status(200).json({ user });
-    } catch (error) {
-      return res.status(500).json({ message: "Lỗi khi đánh dấu người dùng là đã xóa", error });
-    }
-  }
+  //     if (!user) {
+  //       return res.status(404).json({ message: "Người dùng không tồn tại" });
+  //     }
+  //     return res.status(200).json({ user });
+  //   } catch (error) {
+  //     return res.status(500).json({ message: "Lỗi khi đánh dấu người dùng là đã xóa", error });
+  //   }
+  // }
 }
 
 export default new UserController();

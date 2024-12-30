@@ -17,10 +17,10 @@ const employeeSchame = new mongoose.Schema({
         type: String,
         required: true,
     },
-    salary: {
-        type: Number,
-        required: true
-    },
+    // salary: {
+    //     type: Number,
+    //     required: true
+    // },
     employStatus: {
         type: String,
         enum: ["ACTIVE", "LEAVED"],

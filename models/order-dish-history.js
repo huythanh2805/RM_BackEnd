@@ -23,6 +23,9 @@ const orderDishHistorySchame = new mongoose.Schema(
       type: mongoose.Schema.ObjectId,
       ref: "user",
     },
+    isRequiredToCancel: {
+       type: Boolean
+    },
     previousStatus: {
         type: String,
         enum: ["ORDERED", "ISPREPARED", "ISCOMPLETED", "ISCANCELED"],
