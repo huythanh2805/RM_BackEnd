@@ -1,7 +1,7 @@
+import OrderDishHistory from "../models/order-dish-history.js";
 import OrderedCombo from "../models/orderedCombo.js";
 import OrderedDish from "../models/orderedDish.js";
-import Reservation from "../models/reservation.js"; 
-import OrderDishHistory from "../models/order-dish-history.js";
+import Reservation from "../models/reservation.js";
 import { generateUUID } from "../uitls/GenerateUUID.js";
 class OrderedFoodController {
   // Get all
@@ -30,9 +30,9 @@ class OrderedFoodController {
       });
       // const detail = await OrderedCombo.find({reservation_id: reservationId})
       // console.log("OrderedCombos:", detail);
-   console.log({orderedFoods})
+      console.log({ orderedFoods });
       const combos = orderedCombos.map((combo) => {
-        if(!combo.setComboProduct_id) return {...combo._doc, type: "combo", dish_id: null}
+        if (!combo.setComboProduct_id) return { ...combo._doc, type: "combo", dish_id: null };
         const { _id, ...rest } = combo.setComboProduct_id?.combo_id;
         return {
           ...rest._doc,
@@ -53,7 +53,7 @@ class OrderedFoodController {
     const { dish_id, reservation_id, user_id } = req.body;
     if (!reservation_id || !dish_id) return res.status(401).json({ message: "All fields are required" });
     try {
-      const code = generateUUID()
+      const code = generateUUID();
       const orderedFood = await OrderedDish.create({
         code,
         reservation_id,
@@ -63,8 +63,8 @@ class OrderedFoodController {
         code,
         reservation_id,
         changer_id: user_id,
-        ordered_dish: orderedFood._doc._id
-      })
+        ordered_dish: orderedFood._doc._id,
+      });
       await Reservation.findByIdAndUpdate(
         reservation_id,
         { $push: { ordered_dishes: orderedFood._doc._id } } // Dùng toán tử $push để thêm vào mảng
@@ -118,20 +118,20 @@ class OrderedFoodController {
   // Update status orderedDish
   updateOrderedDishesStatus = async (req, res) => {
     try {
-     const {orderedFoodId, newStatus, reservation_id, changer_id, code} = req.body
-     if(!orderedFoodId) return res.status(401).json({message: "Id is not existed"});
-       const orderedDish = await OrderedDish.findById(orderedFoodId)
-       await OrderedDish.findByIdAndUpdate(orderedFoodId, {status: newStatus}, {new: true})
-       await OrderDishHistory.create({
-              code,
-              reservation_id,
-              changer_id,
-              ordered_dish: orderedFoodId,
-              currentStatus: newStatus,
-              previousStatus: orderedDish._doc.status
-       })
+      const { orderedFoodId, newStatus, reservation_id, changer_id, code } = req.body;
+      if (!orderedFoodId) return res.status(401).json({ message: "Id is not existed" });
+      const orderedDish = await OrderedDish.findById(orderedFoodId);
+      await OrderedDish.findByIdAndUpdate(orderedFoodId, { status: newStatus }, { new: true });
+      await OrderDishHistory.create({
+        code,
+        reservation_id,
+        changer_id,
+        ordered_dish: orderedFoodId,
+        currentStatus: newStatus,
+        previousStatus: orderedDish._doc.status,
+      });
       // Trả về kết quả sau khi cập nhật
-      return res.status(200).json({message: "Successfully!"});
+      return res.status(200).json({ message: "Successfully!" });
     } catch (error) {
       return res.status(500).json({ message: "Error updating ordered dish", error });
     }
