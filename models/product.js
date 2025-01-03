@@ -23,15 +23,12 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
-    stockQuantity: {
-      type: Number,
-      default: 0,
-    },
     expiryDate: {
       type: Date,
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
+      required: true,
       ref: "user",
     },
   },

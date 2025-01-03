@@ -3,7 +3,7 @@ import Product from "../models/product.js";
 class ProductController {
   async fetchListProduct(req, res) {
     try {
-      const products = await Product.find({});
+      const products = await Product.find().populate("createdBy").exec();
 
       if (!products || products.length === 0) {
         return res.status(404).json({
@@ -61,11 +61,10 @@ class ProductController {
   async createProduct(req, res) {
     try {
       const product = await Product.create(req.body);
-
-      res.status(200).json({
+      return res.status(201).json({
         message: "Thêm mới sản phẩm thành công!",
+        product,
       });
-      return res.status(201).json(product);
     } catch (error) {
       return res.status(500).json({
         message: "Thêm mới sản phẩm thất bại",

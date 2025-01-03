@@ -2,6 +2,11 @@ import mongoose from "mongoose";
 
 const importNotesSchema = new mongoose.Schema(
   {
+    code: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     seller: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "seller",
