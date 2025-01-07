@@ -7,11 +7,11 @@ const exportNotesSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    products: [
+    stocks: [
       {
-        product: {
+        stock: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "product",
+          ref: "stock",
           required: true,
         },
         price: {

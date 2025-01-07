@@ -1,9 +1,12 @@
 import ExportNotes from "../models/export-notes.js";
+import Stock from "../models/stock.js";
+
 
 class ExportNotesController {
   async fetchListExportNotes(req, res) {
     try {
-      const exportNotes = await ExportNotes.find().populate("products.product");
+      const exportNotes = await ExportNotes.find().populate("stocks.stock").populate("createdBy").sort({ createdAt: -1 })
+        .exec();
 
       if (!exportNotes || exportNotes.length === 0) {
         return res.status(404).json({
@@ -22,7 +25,16 @@ class ExportNotesController {
 
   async getDetailExportNotes(req, res) {
     try {
-      const exportNotes = await ExportNotes.findById(req.params.id).populate("products.product");
+      const exportNotes = await ExportNotes.findById(req.params.id)
+        .populate({
+          path: "stocks.stock",
+          populate: {
+            path: "product",
+            model: "product",
+          },
+        })
+        .populate("createdBy")
+        .exec();
 
       if (!exportNotes) {
         return res.status(404).json({
@@ -60,15 +72,44 @@ class ExportNotesController {
 
   async createExportNotes(req, res) {
     try {
-      const exportNotes = await ExportNotes.create(req.body);
+      console.log(req?.body);
 
-      res.status(200).json({
-        message: "Thêm mới phiếu nhập thành công!",
+      const { stocks, ...exportData } = req.body;
+
+      // Cập nhật từng `Stock`
+      await Promise.all(
+        stocks.map(async (item) => {
+          const stock = await Stock.findById(item.stock);
+
+          if (!stock) {
+            throw new Error(`Stock with ID ${item.stock} not found`);
+          }
+
+          if (item.quantity > stock.quantity) {
+            throw new Error(`Quantity exceeds available stock for stock ID ${item.stock}`);
+          }
+
+          // Kiểm tra nếu quantity === maxQuantity
+          if (item.quantity === stock.quantity) {
+            await Stock.findByIdAndDelete(item.stock); // Xóa `Stock` nếu số lượng bằng maxQuantity
+          } else {
+            // Giảm số lượng trong `Stock`
+            stock.quantity -= item.quantity;
+            await stock.save(); // Lưu lại thay đổi
+          }
+        })
+      );
+
+      // Sau khi cập nhật xong `Stock`, tạo `ExportNotes`
+      const exportNotes = await ExportNotes.create({
+        ...exportData,
+        stocks, // Bao gồm thông tin `stocks`
       });
+
       return res.status(201).json(exportNotes);
     } catch (error) {
       return res.status(500).json({
-        message: "Thêm mới phiếu nhập thất bại",
+        message: "Thêm mới phiếu xuất thất bại",
         error: error.message,
       });
     }
