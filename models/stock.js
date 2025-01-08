@@ -19,6 +19,9 @@ const stockSchema = new mongoose.Schema(
     expiryDate: {
       type: Date,
     },
+    status: {
+      type: Boolean, default: true,
+    },
     lastUpdated: {
       type: Date,
       default: Date.now,
