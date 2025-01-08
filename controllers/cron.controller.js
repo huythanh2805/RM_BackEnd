@@ -1,7 +1,8 @@
 import cron from "node-cron";
 import discount from "../models/discount.js";
 import Reservation from "../models/reservation.js";
- 
+import stock from "../models/stock.js";
+
 export const cancelPastReservations = async () => {
   try {
     const now = new Date();
@@ -31,8 +32,30 @@ export const cancelDiscound = async () => {
     console.error("Error running cron job:", error);
   }
 };
+export const updateStock = async () => {
+  try {
+    // Lấy danh sách tất cả sản phẩm từ cơ sở dữ liệu
+    const stocks = await stock.find({});
+    const now = new Date();
+    for (const item of stocks) {
+      if (item.expiryDate && new Date(item.expiryDate) < now) {
+        await stock.updateOne(
+          { _id: item._id },
+          { $set: { status: false } }
+        );
+        console.log(`Stock ${item._id} đã được cập nhật status = false`);
+      }
+    }
+
+    console.log("Cập nhật trạng thái tồn kho hoàn tất.");
+  } catch (error) {
+    console.error("Error updating stock:", error);
+  }
+};
+
 export const startCronJob = () => {
   console.log("thành công");
   cron.schedule("*/30 * * * *", cancelPastReservations);
   cron.schedule("0 0 * * *", cancelDiscound);
+  cron.schedule("0 0 * * *", updateStock);
 };

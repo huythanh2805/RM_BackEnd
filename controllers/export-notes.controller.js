@@ -90,13 +90,12 @@ class ExportNotesController {
           }
 
           // Kiểm tra nếu quantity === maxQuantity
-          if (item.quantity === stock.quantity) {
-            await Stock.findByIdAndDelete(item.stock); // Xóa `Stock` nếu số lượng bằng maxQuantity
-          } else {
+          if (item.quantity <= stock.quantity) {
             // Giảm số lượng trong `Stock`
             stock.quantity -= item.quantity;
-            await stock.save(); // Lưu lại thay đổi
+            await stock.save();
           }
+
         })
       );
 
