@@ -1,9 +1,11 @@
 import ImportNotes from "../models/import-notes.js";
+import Product from "../models/product.js";
+import Stock from "../models/stock.js";
 
 class ImportNotesController {
   async fetchListImportNotes(req, res) {
     try {
-      const importNotes = await ImportNotes.find().populate("seller").populate("products.product");
+      const importNotes = await ImportNotes.find().populate("seller").populate("products.product").populate("createdBy").exec();
 
       if (!importNotes || importNotes.length === 0) {
         return res.status(404).json({
@@ -22,7 +24,11 @@ class ImportNotesController {
 
   async getDetailImportNotes(req, res) {
     try {
-      const importNotes = await ImportNotes.findById(req.params.id).populate("seller").populate("products.product");
+      const importNotes = await ImportNotes.findById(req.params.id)
+        .populate("seller")
+        .populate("products.product")
+        .populate("createdBy")
+        .exec();
 
       if (!importNotes) {
         return res.status(404).json({
@@ -60,11 +66,44 @@ class ImportNotesController {
 
   async createImportNotes(req, res) {
     try {
-      const importNotes = await ImportNotes.create(req.body);
+      const { products, ...importData } = req.body;
 
-      res.status(200).json({
-        message: "Thêm mới phiếu nhập thành công!",
-      });
+      const updatedProducts = await Promise.all(
+        products.map(async (item) => {
+          if (!item.product) {
+
+            const newProduct = await Product.create({
+              code: item?.code,
+              name: item?.name,
+              category: item?.category,
+              unit: item?.unit,
+              createdBy: importData.createdBy,
+            });
+            return { ...item, product: newProduct._id };
+          }
+          return item;
+        })
+      );
+
+      await Promise.all(
+        updatedProducts.map(async (item) => {
+          await Stock.create({
+            product: item.product,
+            quantity: item.quantity,
+            expiryDate: item?.expiryDate,
+            price: item.price,
+            createdBy: importData.createdBy,
+          });
+        })
+      );
+
+      const importNotesData = {
+        ...importData,
+        products: updatedProducts,
+      };
+
+      const importNotes = await ImportNotes.create(importNotesData);
+
       return res.status(201).json(importNotes);
     } catch (error) {
       return res.status(500).json({
