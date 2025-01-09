@@ -111,7 +111,7 @@ class UserController {
   async login(req, res) {
     const { email, password } = req.body;
     try {
-      const user = await User.findOne({ email, isdelete: 0 });
+      const user = await User.findOne({ email });
       if (!user) {
         return res.status(400).json({ message: "Tài khoản không tồn tại" });
       }

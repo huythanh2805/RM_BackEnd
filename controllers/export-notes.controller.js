@@ -5,23 +5,33 @@ import Stock from "../models/stock.js";
 class ExportNotesController {
   async fetchListExportNotes(req, res) {
     try {
-      const exportNotes = await ExportNotes.find().populate("stocks.stock").populate("createdBy").sort({ createdAt: -1 })
+      const exportNotes = await ExportNotes.find()
+        .populate({
+          path: "stocks.stock", // Liên kết với `stock`
+          populate: {
+            path: "product", // Liên kết tiếp với `product`
+            model: "product", // Tên model trong `productSchema`
+          },
+        })
+        .populate("createdBy") // Liên kết với `user` từ `createdBy`
+        .sort({ createdAt: -1 })
         .exec();
-
+      console.log(exportNotes);
       if (!exportNotes || exportNotes.length === 0) {
         return res.status(404).json({
-          message: "Không tìm thấy phiếu nhập",
+          message: "Không tìm thấy phiếu xuất",
         });
       }
 
       return res.status(200).json(exportNotes);
     } catch (error) {
       return res.status(500).json({
-        message: "Lấy danh sách phiếu nhập thất bại",
+        message: "Lấy danh sách phiếu xuất thất bại",
         error: error.message,
       });
     }
   }
+
 
   async getDetailExportNotes(req, res) {
     try {
