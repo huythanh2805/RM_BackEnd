@@ -14,20 +14,25 @@ import dashBoardRoute from "./routes/dashboard.route.js";
 import discountRoute from "./routes/discount.route.js";
 import dishRoute from "./routes/dish.route.js";
 import employeeRoute from "./routes/employee.route.js";
-import workScheduleRoute from "./routes/workSchedule.route.js";
+import exportNotesRoute from "./routes/export-notes.route.js";
 import feedbackRoute from "./routes/feedback.route.js";
+import importNotesRoute from "./routes/import-notes.route.js";
 import locationRoute from "./routes/location.route.js";
 import messageRoute from "./routes/message.route.js";
 import notificationRoute from "./routes/notification.route.js";
+import orderDishHistoryRoute from "./routes/order-dish-history.route.js";
 import orderedComboRoute from "./routes/orderedCombo.route.js";
 import orderedFoodRoute from "./routes/orderedFood.route.js";
 import paymentRoute from "./routes/payment.route.js";
+import productRoute from "./routes/product.route.js";
 import reservationRoute from "./routes/Reservation.route.js";
+import sellerRoute from "./routes/seller.route.js";
 import setComboRoute from "./routes/setCombo.route.js";
+import stockRoute from "./routes/stock.route.js";
 import tableRoute from "./routes/table.route.js";
 import userRoutes from "./routes/user.route.js";
 import userDiscountRoute from "./routes/userDiscount.route.js";
-import orderDishHistoryRoute from "./routes/order-dish-history.route.js";
+import workScheduleRoute from "./routes/workSchedule.route.js";
 
 // .env
 dotenv.config();
@@ -91,6 +96,16 @@ app.use("/api", paymentRoute);
 app.use(feedbackRoute);
 // orderDishHistoryRoute route
 app.use(orderDishHistoryRoute);
+
+app.use("/api", sellerRoute);
+
+app.use("/api", productRoute);
+
+app.use("/api", stockRoute);
+
+app.use("/api", importNotesRoute);
+
+app.use("/api", exportNotesRoute);
 
 //cron
 startCronJob();
