@@ -78,6 +78,7 @@ class SetComboController {
         images,
         desc: req.body.desc,
         isShow: req.body.isShow,
+        isDelete: req.body.isDelete,
       });
 
       const setComboProducts = await SetComboProduct.create({
@@ -119,6 +120,7 @@ class SetComboController {
         images,
         desc: req.body.desc,
         isShow: req.body.isShow,
+        isDelete: req.body.isDelete,
       };
 
       const setCombo = await SetCombo.findByIdAndUpdate(

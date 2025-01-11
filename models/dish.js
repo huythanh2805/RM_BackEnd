@@ -23,6 +23,10 @@ const dishSchame = new mongoose.Schema({
         type: Boolean,
         default: true
     },
+    isDelete: {
+        type: Boolean,
+        default: false,
+    },
     category_id: {
         type: mongoose.SchemaTypes.ObjectId,
         ref: 'category',

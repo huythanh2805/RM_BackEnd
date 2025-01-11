@@ -23,6 +23,10 @@ const setComboSchame = new mongoose.Schema({
         type: Boolean,
         default: true
     },
+    isDelete: {
+        type: Boolean,
+        default: false,
+    },
 }, 
 {
     timestamps: true
