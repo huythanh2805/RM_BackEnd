@@ -3,7 +3,10 @@ import Dish from "../models/dish.js";
 class DishController {
   async getAllDishes(req, res) {
     try {
-      const dishes = await Dish.find({}).populate("category_id", "name _id");
+      const dishes = await Dish.find({}).populate(
+        "category_id",
+        "name isDelete _id"
+      );
 
       if (!dishes || dishes.length === 0) {
         return res.status(404).json({
@@ -94,6 +97,32 @@ class DishController {
       });
 
       return res.status(200).json(dish);
+    } catch (error) {
+      return res.status(500).json({
+        message: "Cập nhật món ăn thất bại",
+        error: error.message,
+      });
+    }
+  }
+
+  async updateDishByCategory(req, res) {
+    try {
+      const { category_id, isShow } = req.body;
+
+      const result = await Dish.updateMany(
+        { category_id: category_id },
+        { $set: { isShow: isShow } }
+      );
+
+      if (result.nModified === 0) {
+        return res.status(404).json({
+          message: "Không có sản phẩm nào được cập nhật.",
+        });
+      }
+
+      res.status(200).json({
+        message: "Cập nhật sản phẩm thành công.",
+      });
     } catch (error) {
       return res.status(500).json({
         message: "Cập nhật món ăn thất bại",

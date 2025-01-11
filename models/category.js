@@ -14,6 +14,10 @@ const categorySchame = new mongoose.Schema({
         required: true,
         default: true,
     },
+    isDelete: {
+        type: Boolean,
+        default: false,
+    },
     dishes_id: [
         {
             type: mongoose.SchemaTypes.ObjectId,
