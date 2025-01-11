@@ -6,6 +6,7 @@ import notifications from "../models/notifications.js";
 import Reservation from "../models/reservation.js";
 import Table from "../models/table.js";
 import UserDiscount from "../models/userDiscount.js";
+import { mergeCompletedComboItems, mergeCompletedFoodItems } from "../uitls/MergeFood.js";
 import ReservationController from "./reservation.controller.js";
 
 const reservationController = new ReservationController();
@@ -82,7 +83,10 @@ class BillController {
       const billDetail = new BillDetail({
         bill_id: newBill._id,
       });
-      for (const ordered_dish of reservation.ordered_dishes) {
+      console
+      const mergingOrderFoods = mergeCompletedFoodItems(reservation.ordered_dishes)
+      const mergingOrderCombos = mergeCompletedComboItems(reservation.ordered_combos)
+      for (const ordered_dish of mergingOrderFoods) {
         const billDish = await BillDish.create({
           name: ordered_dish.dish_id.name,
           price: ordered_dish.dish_id.price,
@@ -92,7 +96,7 @@ class BillController {
         });
         billDetail.orderedDishes.push(billDish._doc._id);
       }
-      for (const ordered_combos of reservation.ordered_combos) {
+      for (const ordered_combos of mergingOrderCombos) {
         const billCombo = await BillCombo.create({
           name: ordered_combos.setComboProduct_id.combo_id.name,
           price: ordered_combos.setComboProduct_id.combo_id.price,
@@ -242,11 +246,9 @@ class BillController {
 
   payment = async (req, res) => {
     try {
-      console.log("Webhook received:", req.body);
       if (!req?.body?.content) {
         return res.status(400).send("Invalid content in response body");
       }
-      console.log(req.body.content);
       const hihi = req.body.content.trim().split(/\s+/);
       if (!hihi) {
         return res.status(400).send("Transaction code not found in content");
@@ -255,7 +257,6 @@ class BillController {
       const original_money = hihi[1];
       const discount_money = hihi[2];
       const depositMoney = hihi[3] || 0;
-      console.log(depositMoney);
       const transferAmount = req?.body?.transferAmount;
       if (!transferAmount) {
         return res.status(400).send("Transfer amount not found");
