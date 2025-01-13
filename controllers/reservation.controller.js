@@ -54,10 +54,10 @@ class ReservationController {
     try {
       const { reservation_id } = req.params;
       const reservation = await Reservation.findById(reservation_id)
-      .populate({
-        path: "userDiscountId",
-        model: "userDiscount",
-      })
+        .populate({
+          path: "userDiscountId",
+          model: "userDiscount",
+        })
         .populate({
           path: "ordered_dishes",
           populate: {
@@ -206,7 +206,9 @@ class ReservationController {
   getReservationsByUser = async (req, res) => {
     try {
       const { userId } = req.params;
-      console.log(userId);
+      console.log("User ID:", userId);
+
+      // Tìm các đơn đặt bàn theo user_id
       const reservations = await Reservation.find({ user_id: userId })
         .populate({
           path: "ordered_dishes",
@@ -217,20 +219,18 @@ class ReservationController {
         })
         .sort({ createdAt: -1 });
 
-      if (!reservations || reservations.length === 0) {
-        return res.status(404).json({ message: "No reservations found for this user" });
-      }
-
-      return res.status(200).json({ reservations });
+      // Nếu không có đơn đặt bàn, trả về danh sách rỗng
+      return res.status(200).json({ reservations: reservations || [] });
     } catch (error) {
-      console.error(error);
+      console.error("Error fetching reservations:", error.message);
       return res.status(500).json({ message: "Internal Server Error" });
     }
   };
+
   // Lấy tất cả đơn đặt bàn đang có trạng thái là đang hoạt động
   getAllActiveReservation = async (req, res) => {
     try {
-      const reservations = await Reservation.find({ status: "SEATED"})
+      const reservations = await Reservation.find({ status: "SEATED" })
         .populate({
           path: 'ordered_dishes',
           model: "orderedDish",
@@ -273,9 +273,9 @@ class ReservationController {
       req.body;
     try {
       if (!req.body) return res.status(401).json({ message: "All data are required" });
-      const reservationWithPhoneNumber = await Reservation.findOne({phoneNumber , status: "ISWAITING"})
-      console.log({reservationWithPhoneNumber})
-      if(reservationWithPhoneNumber) return res.status(401).json({ message: "Đơn hàng đang chờ xác nhận" });
+      const reservationWithPhoneNumber = await Reservation.findOne({ phoneNumber, status: "ISWAITING" })
+      console.log({ reservationWithPhoneNumber })
+      if (reservationWithPhoneNumber) return res.status(401).json({ message: "Đơn hàng đang chờ xác nhận" });
       if (couponValue) {
         const userDiscount = await UserDiscount.findById(couponValue).populate("discountId");
         if (!userDiscount) {
@@ -378,7 +378,7 @@ class ReservationController {
         error: error.message,
       });
     }
-  }; 
+  };
   // Reselect table
   reselectTable = async (req, res) => {
     const { reservation_id, table_id } = req.body;
