@@ -3,6 +3,7 @@ import Notifications from "../models/notifications.js";
 import OrderDishHistory from "../models/order-dish-history.js"; 
 import OrderedDish from "../models/orderedDish.js"; 
 import OrderedCombo from "../models/orderedCombo.js"; 
+import Reservation from "../models/reservation.js"; 
 class NotificationsController {
   // Lấy danh sách thông báo cho admin
   async getNotifications(req, res) {
@@ -51,6 +52,13 @@ class NotificationsController {
     try {
       const kitchenNotify = await KitchenNotify.create({title, message, orderedCode})
       if(kitchenNotify) await OrderDishHistory.findByIdAndUpdate(orderHistoryId, {isRequiredToCancel: true})
+      const orderDish = await OrderedDish.findOne({code: orderedCode})
+      if(orderDish){
+        await OrderedDish.findByIdAndUpdate({_id: orderDish._doc._id}, {isRequiredToCancel: true})
+      }else{
+        const orderCombo = await OrderedCombo.findOne({code: orderedCode})
+        await OrderedCombo.findByIdAndUpdate({_id: orderCombo._doc._id}, {isRequiredToCancel: true})
+      }
       return res.status(200).json(kitchenNotify);
     } catch (error) {
       console.error(error);
@@ -84,21 +92,23 @@ class NotificationsController {
       //  Nếu có thì update lại trạng thái cho món ăn được gọi, không thì update lại trạng thái của combo
        const orderHistory = await OrderDishHistory.findOne({code: kitchenNotify._doc.orderedCode}).sort({ createdAt: -1 })
        if(orderDish){
-        await OrderedDish.findOneAndUpdate({code: kitchenNotify._doc.orderedCode}, {status: "ISCANCELED"})
+        await OrderedDish.findOneAndUpdate({code: kitchenNotify._doc.orderedCode}, {status: "ISCANCELED", isRequiredToCancel: false})
         await OrderDishHistory.create({
           code: orderHistory._doc.code,
           reservation_id: orderHistory._doc.reservation_id,
           changer_id,
+          quantity: orderHistory._doc.quantity,
           ordered_dish: orderHistory._doc.ordered_dish,
           currentStatus: "ISCANCELED",
           previousStatus: orderHistory._doc.currentStatus
           })
        }else{
-        await OrderedCombo.findOneAndUpdate({code: kitchenNotify._doc.orderedCode}, {status: "ISCANCELED"})
+        await OrderedCombo.findOneAndUpdate({code: kitchenNotify._doc.orderedCode}, {status: "ISCANCELED", isRequiredToCancel: false})
         await OrderDishHistory.create({
           code: orderHistory._doc.code,
           reservation_id: orderHistory._doc.reservation_id,
           changer_id,
+          quantity: orderHistory._doc.quantity,
           ordered_combo: orderHistory._doc.ordered_combo,
           currentStatus: "ISCANCELED",
           previousStatus: orderHistory._doc.currentStatus

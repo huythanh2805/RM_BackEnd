@@ -2,6 +2,7 @@ import OrderedCombo from "../models/orderedCombo.js"
 import Reservation from "../models/reservation.js"
 import SetComboProduct from "../models/SetComboProducts.js";
 import OrderDishHistory from "../models/order-dish-history.js"; 
+import KitchenNotify from "../models/kitchenNotify.js";
 import { generateUUID } from "../uitls/GenerateUUID.js";
 class OrderedComboController {
   // Get all
@@ -34,19 +35,22 @@ class OrderedComboController {
   }
   // add new
   addNewOrderedCombo = async (req, res) => {
-    const { dish_id, reservation_id , user_id} = req.body
+    const { dish_id, reservation_id , user_id, quantity} = req.body
+    
     if (!reservation_id || !dish_id)
       return res.status(401).json({ message: "All fields are required" })
     try {
         const code = generateUUID()
         const orderedFood = await OrderedCombo.create({
           code,
+          quantity,
           reservation_id,
           setComboProduct_id: dish_id,
         })
          await OrderDishHistory.create({
            code,
            reservation_id,
+           quantity,
            changer_id: user_id,
            ordered_combo: orderedFood._doc._id,
          })
@@ -83,19 +87,24 @@ class OrderedComboController {
   } 
   // Update ordered conbo
   async updateOrderCombo(req, res) {
-    const {orderedFoodId, newStatus, reservation_id, code, changer_id} = req.body
+    const {orderedFoodId, newStatus, reservation_id, code, changer_id, quantity} = req.body
     if (!orderedFoodId)  return res.status(401).json({ message: "Id is not existed" })
     console.log(req.body)
     try {
+
       const orderedCombo = await OrderedCombo.findById(orderedFoodId)
-      await OrderedCombo.findByIdAndUpdate(
-        orderedFoodId,
-      { status: newStatus },
-      { new: true }
-      )
+
+      if(orderedCombo && orderedCombo._doc.isRequiredToCancel && newStatus === "ISCANCELED") {
+        await OrderedCombo.findByIdAndUpdate(orderedFoodId, { status: newStatus, isRequiredToCancel: false }, { new: true });
+        await KitchenNotify.findOneAndUpdate({orderedCode: orderedCombo._doc.code}, {isConfirmed: true})
+      }else{
+        await OrderedCombo.findByIdAndUpdate(orderedFoodId, { status: newStatus }, { new: true });
+      }
+
       await OrderDishHistory.create({
         code,
         reservation_id,
+        quantity,
         changer_id,
         ordered_combo: orderedFoodId,
         currentStatus: newStatus,
@@ -125,33 +134,6 @@ class OrderedComboController {
       return res.status(500).json({ message: "Internal Server Error" })
     }
   }
-//   // Update status orderedDish
-//    updateOrderedDishesStatus = async (req, res) => {
-//     try {
-//       const { selectedRows, statusValue } = req.body; // Lấy dữ liệu từ body
-  
-//       if (!Array.isArray(selectedRows) || !selectedRows.length) {
-//         return res.status(400).json({ message: 'Invalid selectedRows array' });
-//       }
-  
-//       if (!statusValue) {
-//         return res.status(400).json({ message: 'Invalid statusValue' });
-//       }
-  
-//       // Cập nhật tất cả OrderedDish có _id nằm trong mảng selectedRows
-//       const result = await OrderedDish.updateMany(
-//         { _id: { $in: selectedRows } }, // Điều kiện tìm kiếm
-//         { $set: { status: statusValue } } // Cập nhật status
-//       );
-  
-//       // Trả về kết quả sau khi cập nhật
-//       return res.status(200).json({
-//         message: `${result.modifiedCount} dishes updated successfully.`,
-//       });
-//     } catch (error) {
-//       return res.status(500).json({ message: 'Error updating dishes', error });
-//     }
-//   };
 }
 
 export default OrderedComboController

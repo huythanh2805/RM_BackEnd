@@ -2,6 +2,7 @@ import OrderDishHistory from "../models/order-dish-history.js";
 import OrderedCombo from "../models/orderedCombo.js";
 import OrderedDish from "../models/orderedDish.js";
 import Reservation from "../models/reservation.js";
+import KitchenNotify from "../models/kitchenNotify.js";
 import { generateUUID } from "../uitls/GenerateUUID.js";
 class OrderedFoodController {
   // Get all
@@ -50,18 +51,20 @@ class OrderedFoodController {
   };
   // add new
   addNewOrderedDish = async (req, res) => {
-    const { dish_id, reservation_id, user_id } = req.body;
+    const { dish_id, reservation_id, user_id, quantity } = req.body;
     if (!reservation_id || !dish_id) return res.status(401).json({ message: "All fields are required" });
     try {
       const code = generateUUID();
       const orderedFood = await OrderedDish.create({
         code,
+        quantity,
         reservation_id,
         dish_id,
       });
       await OrderDishHistory.create({
         code,
         reservation_id,
+        quantity,
         changer_id: user_id,
         ordered_dish: orderedFood._doc._id,
       });
@@ -118,13 +121,23 @@ class OrderedFoodController {
   // Update status orderedDish
   updateOrderedDishesStatus = async (req, res) => {
     try {
-      const { orderedFoodId, newStatus, reservation_id, changer_id, code } = req.body;
+      const { orderedFoodId, newStatus, reservation_id, changer_id, code , quantity} = req.body;
       if (!orderedFoodId) return res.status(401).json({ message: "Id is not existed" });
       const orderedDish = await OrderedDish.findById(orderedFoodId);
-      await OrderedDish.findByIdAndUpdate(orderedFoodId, { status: newStatus }, { new: true });
+      // Update món ăn
+      if(orderedDish && orderedDish._doc.isRequiredToCancel && newStatus === "ISCANCELED") {
+        await OrderedDish.findByIdAndUpdate(orderedFoodId, { status: newStatus, isRequiredToCancel: false }, { new: true });
+        await KitchenNotify.findOneAndUpdate({orderedCode: orderedDish._doc.code}, {isConfirmed: true})
+      }else{
+        await OrderedDish.findByIdAndUpdate(orderedFoodId, { status: newStatus }, { new: true });
+      }
+      // Tạo order history
+      console.log({quantity})
+      
       await OrderDishHistory.create({
         code,
         reservation_id,
+        quantity,
         changer_id,
         ordered_dish: orderedFoodId,
         currentStatus: newStatus,

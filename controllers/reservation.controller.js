@@ -5,6 +5,8 @@ import OrderedDish from "../models/orderedDish.js";
 import Reservation from "../models/reservation.js";
 import Table from "../models/table.js";
 import UserDiscount from "../models/userDiscount.js";
+import OrderDishHistory from "../models/order-dish-history.js";
+import { generateUUID } from "../uitls/GenerateUUID.js";
 
 class ReservationController {
   constructor(io) {
@@ -153,7 +155,7 @@ class ReservationController {
   };
   // add new reservation admin
   createAdminReservation = async (req, res) => {
-    const { table_id, userName, guests_count, payment_method, startTime, detailAddress, phoneNumber, orderedFoods } =
+    const { table_id, userName, guests_count, payment_method, startTime, detailAddress, phoneNumber, orderedFoods, user_id } =
       req.body;
     try {
       const reservationCode = `MD${Math.floor(100000 + Math.random() * 900000)}`;
@@ -174,6 +176,7 @@ class ReservationController {
       // 5: push orderedDish _id or orderedCombo _id into reservation
       // Tạo mới billDish và insert vào billDetail
       console.log({ orderedFoods });
+
       for (const orderedDish of orderedFoods) {
         if (orderedDish.type === "combo") {
           const newOrderedCombo = await OrderdCombo.create({
@@ -182,6 +185,14 @@ class ReservationController {
             reservation_id: newReservation._doc._id,
           });
           newReservation.ordered_combos.push(newOrderedCombo._doc._id);
+          // Thêm lịch sử 
+           await OrderDishHistory.create({
+             code: generateUUID(),
+             reservation_id: newReservation._doc._id,
+             quantity: orderedDish.quantity,
+             changer_id: user_id,
+             ordered_combo: newOrderedCombo._doc._id,
+           })
         } else if (orderedDish.type === "dish") {
           const newOrderedDish = await OrderedDish.create({
             dish_id: orderedDish.dish_id._id,
@@ -189,6 +200,14 @@ class ReservationController {
             reservation_id: newReservation._doc._id,
           });
           newReservation.ordered_dishes.push(newOrderedDish._doc._id);
+          // Thêm lịch sử
+          await OrderDishHistory.create({
+            code: generateUUID(),
+            reservation_id: newReservation._doc._id,
+            quantity: orderedDish.quantity,
+            changer_id: user_id,
+            ordered_dish: newOrderedDish._doc._id,
+          })
         }
       }
       const reservation = await newReservation.save();
