@@ -8,5 +8,7 @@ const stockController = new StockController();
 router.get("/stocks", stockController.fetchListStock);
 router.get("/stocks/status", stockController.fetchListStockStatus);
 router.put("/stocks/:id", stockController.updateStock);
+router.get("/stocks/take-inventory/:id", stockController.getListTakeInventoryByStockID);
+router.put("/stocks/update-take-inventory", stockController.updateStockTakeInventory);
 
 export default router;
