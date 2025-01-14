@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import ImportNotes from "../models/import-notes.js";
 import Product from "../models/product.js";
 import Stock from "../models/stock.js";
@@ -5,7 +6,11 @@ import Stock from "../models/stock.js";
 class ImportNotesController {
   async fetchListImportNotes(req, res) {
     try {
-      const importNotes = await ImportNotes.find().populate("seller").populate("products.product").populate("createdBy").exec();
+      const importNotes = await ImportNotes.find()
+        .populate("seller")
+        .populate("products.product")
+        .populate("createdBy")
+        .exec();
 
       if (!importNotes || importNotes.length === 0) {
         return res.status(404).json({
@@ -22,17 +27,23 @@ class ImportNotesController {
     }
   }
 
+
   async getDetailImportNotes(req, res) {
     try {
-      const importNotes = await ImportNotes.findById(req.params.id)
+      const { id } = req.params; 
+      const importNotes = await ImportNotes.findOne({
+        $or: [
+          { code: id.toString() },
+          mongoose.isValidObjectId(id) ? { _id: id } : {},
+        ],
+      })
         .populate("seller")
         .populate("products.product")
         .populate("createdBy")
         .exec();
-
       if (!importNotes) {
         return res.status(404).json({
-          message: "",
+          message: "Phiếu nhập không tồn tại.",
         });
       }
 
@@ -66,12 +77,22 @@ class ImportNotesController {
 
   async createImportNotes(req, res) {
     try {
-      const { products, ...importData } = req.body;
+      const { products, code, ...importData } = req.body;
+      const existingImportNote = await ImportNotes.findOne({ code });
+      if (existingImportNote) {
+        return res.status(400).json({
+          message: "Mã phiếu nhập đã tồn tại. Vui lòng sử dụng mã khác.",
+        });
+      }
 
+      // Xử lý sản phẩm trong phiếu nhập
       const updatedProducts = await Promise.all(
         products.map(async (item) => {
           if (!item.product) {
-
+            const existingProduct = await Product.findOne({ code: item?.code });
+            if (existingProduct) {
+              return { ...item, product: existingProduct._id };
+            }
             const newProduct = await Product.create({
               code: item?.code,
               name: item?.name,
@@ -85,6 +106,7 @@ class ImportNotesController {
         })
       );
 
+      // Thêm sản phẩm vào kho
       await Promise.all(
         updatedProducts.map(async (item) => {
           await Stock.create({
@@ -92,16 +114,18 @@ class ImportNotesController {
             quantity: item.quantity,
             expiryDate: item?.expiryDate,
             price: item.price,
+            codeImport: code,
             createdBy: importData.createdBy,
           });
         })
       );
 
+      // Tạo phiếu nhập
       const importNotesData = {
         ...importData,
+        code,
         products: updatedProducts,
       };
-
       const importNotes = await ImportNotes.create(importNotesData);
 
       return res.status(201).json(importNotes);
@@ -112,6 +136,7 @@ class ImportNotesController {
       });
     }
   }
+
 
   async updateImportNotes(req, res) {
     try {
