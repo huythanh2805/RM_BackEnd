@@ -16,7 +16,6 @@ class ExportNotesController {
         .populate("createdBy") // Liên kết với `user` từ `createdBy`
         .sort({ createdAt: -1 })
         .exec();
-      console.log(exportNotes);
       if (!exportNotes || exportNotes.length === 0) {
         return res.status(404).json({
           message: "Không tìm thấy phiếu xuất",
@@ -82,10 +81,7 @@ class ExportNotesController {
 
   async createExportNotes(req, res) {
     try {
-      console.log(req?.body);
-
       const { stocks, ...exportData } = req.body;
-
       // Cập nhật từng `Stock`
       await Promise.all(
         stocks.map(async (item) => {

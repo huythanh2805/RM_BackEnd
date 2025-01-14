@@ -1,7 +1,6 @@
 // import https from 'https'
 export const MoMopayment = async (req, respond) => {
   const { totalPrice, ...rest } = req.body;
-  console.log(req.body);
  
   // Code của momo payment
   var accessKey = "F8BBA842ECF85";
