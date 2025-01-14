@@ -29,7 +29,11 @@ const employeeSchame = new mongoose.Schema({
     workSchedule: {
         type: mongoose.Schema.ObjectId,
         ref: "workSchedule",
-    }
+    },
+    isDelete: {
+        type: Boolean,
+        default: false,
+    },
 }, 
 {
     timestamps: true

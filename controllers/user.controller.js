@@ -2,6 +2,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { OAuth2Client } from "google-auth-library";
 import jwt from "jsonwebtoken";
+import mongoose from "mongoose";
 import cloudinary from "../configs/cloudinary.js";
 import transporter from "../configs/transporter.js";
 import User from "../models/user.js";
@@ -111,7 +112,7 @@ class UserController {
   async login(req, res) {
     const { email, password } = req.body;
     try {
-      const user = await User.findOne({ email });
+      const user = await User.findOne({ email, isdelete: 0 });
       if (!user) {
         return res.status(400).json({ message: "Tài khoản không tồn tại" });
       }
@@ -271,7 +272,16 @@ class UserController {
   //list user accounts
   async getListUsers(req, res) {
     try {
-      const users = await User.find();
+      const users = await User.find({ role: "CLIENT", isdelete: 0 });
+      return res.status(200).json({ users });
+    } catch (error) {
+      console.error("Lỗi lấy danh sách người dùng:", error);
+      return res.status(500).json({ message: "Lỗi lấy danh sách người dùng", error: error.message });
+    }
+  }
+  async getListUsersRole(req, res) {
+    try {
+      const users = await User.find({ role: { $ne: "CLIENT" }, isdelete: 0 });
       return res.status(200).json({ users });
     } catch (error) {
       console.error("Lỗi lấy danh sách người dùng:", error);
@@ -390,19 +400,34 @@ class UserController {
   //Delete user
   async deleteUser(req, res) {
     const { id } = req.params;
+    console.log(id);
     if (!id) {
       return res.status(400).json({ message: "ID người dùng không hợp lệ" });
     }
+
     try {
-      console.log("User ID:", id);
-      const user = await User.findByIdAndDelete(id);
-      console.log("Updated User:", user);
+      // Tìm và cập nhật người dùng
+      const user = await User.findByIdAndUpdate(
+        new mongoose.Types.ObjectId(id),
+        { isdelete: 1 },
+        { new: true }
+      );
+      console.log(user);
+      // Nếu không tìm thấy người dùng
       if (!user) {
         return res.status(404).json({ message: "Người dùng không tồn tại" });
       }
-      return res.status(200).json({ message: "Người dùng đã được đánh dấu là đã xóa." });
+
+      return res.status(200).json({
+        message: "Người dùng đã được đánh dấu là đã xóa.",
+        data: user, // Trả về thông tin người dùng sau khi cập nhật
+      });
     } catch (error) {
-      return res.status(500).json({ message: "Lỗi khi đánh dấu người dùng là đã xóa", error });
+      console.error("Error in deleteUser:", error.message);
+      return res.status(500).json({
+        message: "Lỗi khi đánh dấu người dùng là đã xóa",
+        error: error.message,
+      });
     }
   }
 

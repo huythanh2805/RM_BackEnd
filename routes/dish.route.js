@@ -9,6 +9,7 @@ router.get("/dishes", dishController.getAllDishes);
 router.get("/dishes/:id", dishController.getDishDetail);
 router.post("/dishes", dishController.createDish);
 router.put("/dishes/:id", dishController.updateDish);
+router.put("/dishes", dishController.updateDishByCategory);
 router.delete("/dishes/:id", dishController.deleteDish);
 router.get("/dishes/:id/related", dishController.getRelatedDishes);
 

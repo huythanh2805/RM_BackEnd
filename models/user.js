@@ -37,7 +37,9 @@ const UserSchame = new mongoose.Schema(
     provider: { type: String, required: false },
     resetPasswordToken: { type: String }, // Thêm trường này
     resetPasswordExpires: { type: Date },
+    isdelete: { type: Number, default: 0 },
   },
+
   {
     timestamps: true,
   }
