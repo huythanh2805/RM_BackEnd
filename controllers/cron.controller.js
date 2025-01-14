@@ -43,7 +43,6 @@ export const updateStock = async () => {
           { _id: item._id },
           { $set: { status: false } }
         );
-        console.log(`Stock ${item._id} đã được cập nhật status = false`);
       }
     }
 
@@ -54,7 +53,6 @@ export const updateStock = async () => {
 };
 
 export const startCronJob = () => {
-  console.log("thành công");
   cron.schedule("*/30 * * * *", cancelPastReservations);
   cron.schedule("0 0 * * *", cancelDiscound);
   cron.schedule("0 0 * * *", updateStock);

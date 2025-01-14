@@ -61,7 +61,6 @@ class LocationController {
   async updateLocationInformation(req, res) {
     const { id } = req.params
     const { locationInRestaurant } = req.body
-    console.log({locationInRestaurant, id})
     if (!id) return res.status(401).json({ message: "There's no id" })
     if (!locationInRestaurant)
       return res

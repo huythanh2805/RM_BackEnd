@@ -78,7 +78,6 @@ class OrderedComboController {
           type: 'combo',
           dish_id: {...combo.setComboProduct_id.combo_id._doc}
       }
-      console.log(splitCombo)
       return res.status(201).json({ message: "Successfully", orderedFood:splitCombo})
     } catch (error) {
       console.log("Inventories_Error", error)
