@@ -27,15 +27,14 @@ const takeInventorySchema = new mongoose.Schema(
         newExpiryDate: {
             type: Date,
         },
-        lastStatus: {
-            type: Boolean, default: true,
-        },
-        newStatus: {
-            type: Boolean, default: true,
-        },
         lastUpdated: {
             type: Date,
             default: Date.now,
+        },
+        createdBy: {
+            type: mongoose.Schema.Types.ObjectId,
+            required: true,
+            ref: "user",
         },
     },
     { timestamps: true }

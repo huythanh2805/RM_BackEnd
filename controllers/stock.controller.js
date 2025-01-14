@@ -75,7 +75,7 @@ class StockController {
       return res.status(200).json(stock);
     } catch (error) {
       return res.status(500).json({
-        message: "Cập nhật data thất bại!",
+        message: "Cập nhật data thất bại123aa!",
         error: error.message,
       });
     }
@@ -83,14 +83,45 @@ class StockController {
 
   async updateStockTakeInventory(req, res) {
     try {
+      const { items, createdBy } = req.body;
 
-      console.log("qweqweqw", req.body);
+      if (!items || items.length === 0) {
+        return res.status(400).json({
+          message: "Không có dữ liệu để cập nhật",
+        });
+      }
+      console.log(items);
 
+      const bulkOps = items.map(item => ({
+        updateOne: {
+          filter: { _id: item.stockID },
+          update: {
+            $set: {
+              quantity: item.newQuantity,
+              expiryDate: item.newExpiryDate
+            }
+          }
+        }
+      }));
+      console.log(req.body);
+      const stock = await Stock.bulkWrite(bulkOps);
+      const takeInventoryData = items.map(item => ({
+        stock: item.stockID,
+        price: item.price,
+        lastQuantity: item.lastQuantity,
+        newQuantity: item.newQuantity,
+        lastExpiryDate: item.lastExpiryDate,
+        newExpiryDate: item.newExpiryDate,
+        createdBy: createdBy,
+      }));
 
-      // return res.status(200).json(stock);
+      const takeInventory = await TakeInventory.insertMany(takeInventoryData);
+
+      return res.status(200).json({ message: 'Cập nhật thành công!', stock, takeInventory });
     } catch (error) {
+      console.error(error);
       return res.status(500).json({
-        message: "Cập nhật data thất bại!qqweqw",
+        message: "Cập nhật dữ liệu thất bại!",
         error: error.message,
       });
     }
@@ -98,9 +129,14 @@ class StockController {
 
   async getListTakeInventoryByStockID(req, res) {
     try {
-      const { stockID } = req.params;
+      const { id } = req.params;
 
-      const takeInventories = await TakeInventory.find({ stockID }).populate("stock").exec();
+      const takeInventories = await TakeInventory.find({ stock: id })
+        .populate({
+          path: 'stock',
+          populate: { path: 'product' }
+        }).populate("createdBy").sort({ createdAt: -1 })
+        .exec();
 
       if (!takeInventories || takeInventories.length === 0) {
         return res.status(404).json({
