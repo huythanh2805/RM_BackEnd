@@ -250,8 +250,6 @@ class UserController {
   // Hàm thực hiện việc đặt lại mật khẩu
   async resetPassword(req, res) {
     const { token, newPassword } = req.body;
-    console.log(token);
-    console.log(newPassword);
     // Tìm user theo token
     const user = await User.findOne({
       resetPasswordToken: token,
@@ -272,7 +270,7 @@ class UserController {
   //list user accounts
   async getListUsers(req, res) {
     try {
-      const users = await User.find({ role: "CLIENT", isdelete: 0 });
+      const users = await User.find({ role: "CLIENT" });
       return res.status(200).json({ users });
     } catch (error) {
       console.error("Lỗi lấy danh sách người dùng:", error);
@@ -315,12 +313,7 @@ class UserController {
           uploadStream.end(req.file.buffer);
         });
       }
-
-      console.log("Before hashing password");
       const hashedPassword = await bcrypt.hash(password, 10);
-      console.log("Hashed Password:", hashedPassword);
-
-      // Tạo người dùng mới với tất cả các trường đã nhập
       const newUser = new User({
         email,
         password: hashedPassword,

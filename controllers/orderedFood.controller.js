@@ -29,9 +29,6 @@ class OrderedFoodController {
           },
         ],
       });
-      // const detail = await OrderedCombo.find({reservation_id: reservationId})
-      // console.log("OrderedCombos:", detail);
-      console.log({ orderedFoods });
       const combos = orderedCombos.map((combo) => {
         if (!combo.setComboProduct_id) return { ...combo._doc, type: "combo", dish_id: null };
         const { _id, ...rest } = combo.setComboProduct_id?.combo_id;

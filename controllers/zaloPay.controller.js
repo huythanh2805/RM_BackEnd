@@ -28,7 +28,7 @@ export const createZaloTransaction = async (req, res) => {
   const { totalPrice, ...rest } = req.body;
   const embed_data = {
     //sau khi hoàn tất thanh toán sẽ đi vào link này (thường là link web thanh toán thành công của mình)
-    redirecturl: "http://localhost:4444/thanks",
+    redirecturl: "https://golden-fork.onrender.com/thanks",
     reservation: rest,
   };
   console.log(`${process.env.NGROK_BACKEND_URL}/api/payment/zalo/callback`);
