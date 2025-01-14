@@ -19,6 +19,9 @@ const stockSchema = new mongoose.Schema(
     expiryDate: {
       type: Date,
     },
+    codeImport: {
+      type: String,
+    },
     status: {
       type: Boolean, default: true,
     },
