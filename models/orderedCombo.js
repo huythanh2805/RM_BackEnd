@@ -20,6 +20,10 @@ const OrderedComboSchame = new mongoose.Schema({
         default: 1,
         required: true
     },
+    isRequiredToCancel: {
+        type: Boolean,
+        default: false
+    },
     status: {
         type: String,
         enum: ["ORDERED", "ISPREPARED", "ISCOMPLETED", "ISCANCELED"],

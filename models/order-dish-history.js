@@ -19,6 +19,9 @@ const orderDishHistorySchame = new mongoose.Schema(
       type: mongoose.Schema.ObjectId,
       ref: "orderedCombo",
     },
+    quantity: {
+      type: Number,
+    },
     changer_id: {
       type: mongoose.Schema.ObjectId,
       ref: "user",
