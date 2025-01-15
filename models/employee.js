@@ -26,13 +26,13 @@ const employeeSchame = new mongoose.Schema({
         enum: ["ACTIVE", "LEAVED"],
         default: "ACTIVE"
     },
-    workSchedule: {
-        type: mongoose.Schema.ObjectId,
-        ref: "workSchedule",
-    },
     isDelete: {
         type: Boolean,
         default: false,
+    },
+    workSchedule: {
+        type: mongoose.Schema.ObjectId,
+        ref: "workSchedule",
     },
 }, 
 {
