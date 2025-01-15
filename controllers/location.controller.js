@@ -89,7 +89,7 @@ class LocationController {
         .json({ message: "There is no Id to delete location!" })
 
     try {
-      await Table.deleteMany({ location_id: id })
+      // await Table.deleteMany({ location_id: id })
       await Location.findByIdAndDelete({ _id: id })
       return res.status(201).json({ message: "Delete Successfully!" })
     } catch (error) {
