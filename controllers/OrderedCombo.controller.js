@@ -2,6 +2,7 @@ import OrderedCombo from "../models/orderedCombo.js"
 import Reservation from "../models/reservation.js"
 import SetComboProduct from "../models/SetComboProducts.js";
 import OrderDishHistory from "../models/order-dish-history.js"; 
+import SetCombo from "../models/SetCombo.js"; 
 import KitchenNotify from "../models/kitchenNotify.js";
 import { generateUUID } from "../uitls/GenerateUUID.js";
 class OrderedComboController {
@@ -16,7 +17,7 @@ class OrderedComboController {
         {
             path: "combo_id",
             model: 'setCombo',
-            select: "price images desc name",
+            select: "price images desc name isShow isDelete",
          },
      ])
      const splitCombo = combos.map(combo=>{
@@ -78,7 +79,6 @@ class OrderedComboController {
           type: 'combo',
           dish_id: {...combo.setComboProduct_id.combo_id._doc}
       }
-      console.log(splitCombo)
       return res.status(201).json({ message: "Successfully", orderedFood:splitCombo})
     } catch (error) {
       console.log("Inventories_Error", error)

@@ -7,6 +7,8 @@ import OrderdCombo from "../models/orderedCombo.js";
 import OrderedDish from "../models/orderedDish.js";
 import Reservation from "../models/reservation.js";
 import UserDiscount from "../models/userDiscount.js";
+import OrderDishHistory from "../models/order-dish-history.js";
+import { generateUUID } from "../uitls/GenerateUUID.js";
  
 // APP INFO, STK TEST: 4111 1111 1111 1111
 const config = {
@@ -26,7 +28,7 @@ export const createZaloTransaction = async (req, res) => {
   const { totalPrice, ...rest } = req.body;
   const embed_data = {
     //sau khi hoàn tất thanh toán sẽ đi vào link này (thường là link web thanh toán thành công của mình)
-    redirecturl: "http://localhost:4444/thanks",
+    redirecturl: "https://golden-fork.onrender.com/thanks",
     reservation: rest,
   };
   console.log(`${process.env.NGROK_BACKEND_URL}/api/payment/zalo/callback`);
@@ -87,6 +89,7 @@ export const zaloTransactionCallback = async (req, res) => {
   const { reservation } = embed_data;
   // console.log({embed_data})
   console.log({reservation})
+  console.log('thanh')
 
   try {
     let dataStr = req.body.data;
@@ -104,11 +107,7 @@ export const zaloTransactionCallback = async (req, res) => {
       const { dishs, type, couponValue, ...rest } = reservation;
       // thanh toán thành công
       // Nếu trườnh hợp là update
-      console.log({ id: reservation._id });
-      console.log({ deposite: reservation.deposit });
-      console.log({ type });
       if (type === "UPDATE") {
-        console.log("update");
         await Reservation.findByIdAndUpdate(reservation._id, { deposit: reservation.deposit }, { new: true });
         return res.status(201).json({ message: "Cập nhật thành công" });
       }
@@ -123,12 +122,6 @@ export const zaloTransactionCallback = async (req, res) => {
           return res.status(401).json({ message: "Mã giảm giá không còn hoạt động nữa" });
         }
       }
-      console.log({
-        status: "ISWAITING",
-        userDiscountId: couponValue || null,
-        ...rest,
-      });
-
       // Tạo đặt chỗ
       const newReservation = await Reservation.create({
         status: "ISWAITING",
@@ -143,21 +136,40 @@ export const zaloTransactionCallback = async (req, res) => {
       }
       // Tạo mảng món ăn
       for (const orderedDish of dishs) {
-        console.log({ orderedDish });
         if (orderedDish.type === "combo") {
+          const uuid = generateUUID()
           const newOrderedCombo = await OrderdCombo.create({
             setComboProduct_id: orderedDish.dish_id,
             quantity: orderedDish.quantity,
+            code: uuid,
             reservation_id: newReservation._doc._id,
           });
           newReservation.ordered_combos.push(newOrderedCombo._doc._id);
+          // Thêm lịch sử 
+            await OrderDishHistory.create({
+              code: uuid,
+              reservation_id: newReservation._doc._id,
+              quantity: orderedDish.quantity,
+              changer_id: reservation.user_id,
+              ordered_combo: newOrderedCombo._doc._id,
+            })
         } else if (orderedDish.type === "dish") {
+          const uuid = generateUUID()
           const newOrderedDish = await OrderedDish.create({
             dish_id: orderedDish.dish_id,
             quantity: orderedDish.quantity,
+            code: uuid,
             reservation_id: newReservation._doc._id,
           });
           newReservation.ordered_dishes.push(newOrderedDish._doc._id);
+           // Thêm lịch sử
+            await OrderDishHistory.create({
+              code: uuid,
+              reservation_id: newReservation._doc._id,
+              quantity: orderedDish.quantity,
+              changer_id: reservation.user_id,
+              ordered_dish: newOrderedDish._doc._id,
+            })
         }
       }
       await newReservation.save();

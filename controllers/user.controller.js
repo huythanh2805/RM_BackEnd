@@ -20,35 +20,49 @@ class UserController {
       const { email, name, picture } = payload;
 
       let user = await User.findOne({ email });
+
       if (!user) {
+        // Tạo mới tài khoản nếu chưa tồn tại
         user = new User({
           email,
           userName: name,
           image: picture,
           provider: "google",
+          isdelete: 0, // Mặc định isdelete = 0 khi tạo mới
         });
+
         const randomPassword = crypto.randomBytes(3).toString("hex");
         const hashPassword = await bcrypt.hash(randomPassword, 12);
         user.password = hashPassword;
+
         const mailOptions = {
           from: "thiuyen1132004@gmail.com",
           to: user.email,
           subject: "Mật khẩu đăng nhập",
           text: `Đây là mật khẩu của bạn, vui lòng dùng nó để đăng nhập: ${randomPassword}`,
         };
+
         transporter.sendMail(mailOptions, (error) => {
           if (error) {
             console.error("Error sending email:", error);
             return res.status(500).json({ message: "Không thể gửi email. Vui lòng thử lại sau." });
           }
         });
+
         await user.save();
       } else {
+        // Kiểm tra nếu tài khoản bị khóa (isdelete = 1)
+        if (user.isdelete === 1) {
+          return res.status(403).json({
+            message: "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ với quản trị viên để được hỗ trợ.",
+          });
+        }
+
         if (!user.password) {
           const randomPassword = crypto.randomBytes(3).toString("hex");
           const hashPassword = await bcrypt.hash(randomPassword, 12);
           user.password = hashPassword;
-          await user.save();
+
           const mailOptions = {
             from: "thiuyen1132004@gmail.com",
             to: user.email,
@@ -62,11 +76,16 @@ class UserController {
               return res.status(500).json({ message: "Không thể gửi email. Vui lòng thử lại sau." });
             }
           });
+
+          await user.save();
         }
       }
+
+      // Tạo JWT token và trả về nếu tài khoản hợp lệ
       const jwtToken = jwt.sign({ id: user._id, email: user.email, role: user.role }, process.env.JWT_SECRET, {
         expiresIn: "7d",
       });
+
       return res.status(200).json({
         message: "Login successful",
         token: jwtToken,
@@ -82,6 +101,7 @@ class UserController {
       return res.status(400).json({ message: "Invalid Google token" });
     }
   }
+
 
   //Client
   // Register method
@@ -250,8 +270,6 @@ class UserController {
   // Hàm thực hiện việc đặt lại mật khẩu
   async resetPassword(req, res) {
     const { token, newPassword } = req.body;
-    console.log(token);
-    console.log(newPassword);
     // Tìm user theo token
     const user = await User.findOne({
       resetPasswordToken: token,
@@ -272,7 +290,7 @@ class UserController {
   //list user accounts
   async getListUsers(req, res) {
     try {
-      const users = await User.find({ role: "CLIENT", isdelete: 0 });
+      const users = await User.find({ role: "CLIENT" });
       return res.status(200).json({ users });
     } catch (error) {
       console.error("Lỗi lấy danh sách người dùng:", error);
@@ -315,12 +333,7 @@ class UserController {
           uploadStream.end(req.file.buffer);
         });
       }
-
-      console.log("Before hashing password");
       const hashedPassword = await bcrypt.hash(password, 10);
-      console.log("Hashed Password:", hashedPassword);
-
-      // Tạo người dùng mới với tất cả các trường đã nhập
       const newUser = new User({
         email,
         password: hashedPassword,
@@ -400,7 +413,8 @@ class UserController {
   //Delete user
   async deleteUser(req, res) {
     const { id } = req.params;
-    console.log(id);
+    const { isdelete } = req.body;
+    console.log(isdelete);
     if (!id) {
       return res.status(400).json({ message: "ID người dùng không hợp lệ" });
     }
@@ -409,7 +423,7 @@ class UserController {
       // Tìm và cập nhật người dùng
       const user = await User.findByIdAndUpdate(
         new mongoose.Types.ObjectId(id),
-        { isdelete: 1 },
+        { isdelete },
         { new: true }
       );
       console.log(user);

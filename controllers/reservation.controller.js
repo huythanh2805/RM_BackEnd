@@ -144,10 +144,8 @@ class ReservationController {
         })
           .populate("user_id")
           .populate("table_id");
-        console.log(reservationDetail);
         return res.status(201).json({ reservationDetail });
       }
-      console.log({ reservationDetail });
     } catch (error) {
       console.log("Inventories_Error", error);
       return res.status(500).json({ message: "Internal Server Error" });
@@ -178,31 +176,35 @@ class ReservationController {
       console.log({ orderedFoods });
 
       for (const orderedDish of orderedFoods) {
+        const uuid = generateUUID()
         if (orderedDish.type === "combo") {
           const newOrderedCombo = await OrderdCombo.create({
             setComboProduct_id: orderedDish._id,
             quantity: orderedDish.quantity,
+            code: uuid,
             reservation_id: newReservation._doc._id,
           });
           newReservation.ordered_combos.push(newOrderedCombo._doc._id);
           // Thêm lịch sử 
            await OrderDishHistory.create({
-             code: generateUUID(),
+             code: uuid,
              reservation_id: newReservation._doc._id,
              quantity: orderedDish.quantity,
              changer_id: user_id,
              ordered_combo: newOrderedCombo._doc._id,
            })
         } else if (orderedDish.type === "dish") {
+          const uuid = generateUUID()
           const newOrderedDish = await OrderedDish.create({
             dish_id: orderedDish.dish_id._id,
+            code: uuid,
             quantity: orderedDish.quantity,
             reservation_id: newReservation._doc._id,
           });
           newReservation.ordered_dishes.push(newOrderedDish._doc._id);
           // Thêm lịch sử
           await OrderDishHistory.create({
-            code: generateUUID(),
+            code: uuid,
             reservation_id: newReservation._doc._id,
             quantity: orderedDish.quantity,
             changer_id: user_id,
@@ -293,7 +295,6 @@ class ReservationController {
     try {
       if (!req.body) return res.status(401).json({ message: "All data are required" });
       const reservationWithPhoneNumber = await Reservation.findOne({ phoneNumber, status: "ISWAITING" })
-      console.log({ reservationWithPhoneNumber })
       if (reservationWithPhoneNumber) return res.status(401).json({ message: "Đơn hàng đang chờ xác nhận" });
       if (couponValue) {
         const userDiscount = await UserDiscount.findById(couponValue).populate("discountId");

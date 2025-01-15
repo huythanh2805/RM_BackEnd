@@ -23,7 +23,6 @@ class StockController {
   async fetchListStockStatus(req, res) {
     try {
       const stock = await Stock.find({ status: true, quantity: { $gte: 1 } }).populate("product");
-      console.log(stock);
       if (!stock || stock.length === 0) {
         return res.status(404).json({
           message: "Không tìm thấy data",
@@ -90,8 +89,6 @@ class StockController {
           message: "Không có dữ liệu để cập nhật",
         });
       }
-      console.log(items);
-
       const bulkOps = items.map(item => ({
         updateOne: {
           filter: { _id: item.stockID },
@@ -103,7 +100,6 @@ class StockController {
           }
         }
       }));
-      console.log(req.body);
       const stock = await Stock.bulkWrite(bulkOps);
       const takeInventoryData = items.map(item => ({
         stock: item.stockID,
@@ -144,7 +140,7 @@ class StockController {
         });
       }
 
-      return res.status(200).json(takeInventories);
+      return res.status(200).json(takeInventories || []);
     } catch (error) {
       return res.status(500).json({
         message: "Failed to get takeInventory by stockId",

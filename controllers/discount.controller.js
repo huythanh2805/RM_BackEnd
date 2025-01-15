@@ -5,8 +5,6 @@ const createDiscount = async (req, res) => {
   try {
     // Lấy dữ liệu từ body của request
     const { discountType, discountValue, expireDate, minOrderValue, totalQuantity, userId } = req.body;
-
-    console.log(req.body);
     // Kiểm tra dữ liệu đầu vào (có thể dùng thư viện như Zod hoặc Joi nếu muốn thêm validation nâng cao)
     if (!discountType || !discountValue || !expireDate || !totalQuantity || !userId) {
       return res.status(400).json({ message: "Bạn cần nhập đầy đủ thông tin" });
@@ -100,7 +98,6 @@ const getDiscountById = async (req, res) => {
 const updateDiscountById = async (req, res) => {
   const { id } = req.params;
   const body = req.body;
-  console.log(body);
   try {
     const discount = await Discount.findById(id);
     if (!discount) return res.status(200).json({ message: "Không thể tìm thấy mã" });
