@@ -28,6 +28,10 @@ const workScheduleSchame = new mongoose.Schema({
         enum: [1, 2, 3],
         default: 1
     },
+    isShow:{
+        type: Boolean,
+        default: false
+    }
     // week_1: {
     //     type: mongoose.Schema.ObjectId,
     //     ref: "shift", 
