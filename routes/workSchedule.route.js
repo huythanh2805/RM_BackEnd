@@ -9,6 +9,7 @@ router.get("/workSchedules", workScheduleController.getAllworkSchedule);
 router.get("/workSchedules/:id", workScheduleController.getWorkScheduleDetail);
 router.post("/workSchedules", workScheduleController.createWorkSchedule);
 router.put("/workSchedules/:id", workScheduleController.updateWorkSchedule);
+router.put("/workSchedules", workScheduleController.updateWorkbyEmployee);
 router.delete("/workSchedules/:id", workScheduleController.deleteWorkSchedule);
- 
+
 export default router;

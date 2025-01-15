@@ -135,6 +135,31 @@ class workScheduleController {
     }
   }
 
+
+  async updateWorkbyEmployee(req, res) {
+    try {
+      const { employee_id, isShow } = req.body;
+      const result = await WorkSchedule.updateMany(
+        { employee_id: employee_id },
+        { $set: { isShow: isShow } }
+      );
+      if (result.nModified === 0) {
+        return res.status(404).json({
+          message: "Không có lịch nào được cập nhật.",
+        });
+      }
+      res.status(200).json({
+        message: "Cập nhật lịch thành công.",
+      });
+    } catch (error) {
+      return res.status(500).json({
+        message: "Cập nhật lịch thất bại",
+        error: error.message,
+      });
+    }
+  }
+
+
   async deleteWorkSchedule(req, res) {
     try {
       const deletedWorkSchedule = await WorkSchedule.findByIdAndDelete(
