@@ -144,10 +144,8 @@ class ReservationController {
         })
           .populate("user_id")
           .populate("table_id");
-        console.log(reservationDetail);
         return res.status(201).json({ reservationDetail });
       }
-      console.log({ reservationDetail });
     } catch (error) {
       console.log("Inventories_Error", error);
       return res.status(500).json({ message: "Internal Server Error" });
@@ -297,7 +295,6 @@ class ReservationController {
     try {
       if (!req.body) return res.status(401).json({ message: "All data are required" });
       const reservationWithPhoneNumber = await Reservation.findOne({ phoneNumber, status: "ISWAITING" })
-      console.log({ reservationWithPhoneNumber })
       if (reservationWithPhoneNumber) return res.status(401).json({ message: "Đơn hàng đang chờ xác nhận" });
       if (couponValue) {
         const userDiscount = await UserDiscount.findById(couponValue).populate("discountId");

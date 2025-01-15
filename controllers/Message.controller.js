@@ -34,7 +34,6 @@ const getMessagesByConversationId = async ( req, res) => {
     if(!conversationId || conversationId === 'undefined') return res.status(401).json({message: 'Conversation Id must be required'})
     // Tìm tất cả các tin nhắn có conversationId phù hợp
     const messages = await Message.find({ conversationId }).populate('senderId').sort({ timestamp: 1 });
-    console.log({messages})
     return res.status(201).json({messages});
   } catch (error) {
     console.error('Error in getMessagesByConversationId:', error);

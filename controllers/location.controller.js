@@ -61,7 +61,6 @@ class LocationController {
   async updateLocationInformation(req, res) {
     const { id } = req.params
     const { locationInRestaurant } = req.body
-    console.log({locationInRestaurant, id})
     if (!id) return res.status(401).json({ message: "There's no id" })
     if (!locationInRestaurant)
       return res
@@ -90,7 +89,7 @@ class LocationController {
         .json({ message: "There is no Id to delete location!" })
 
     try {
-      await Table.deleteMany({ location_id: id })
+      // await Table.deleteMany({ location_id: id })
       await Location.findByIdAndDelete({ _id: id })
       return res.status(201).json({ message: "Delete Successfully!" })
     } catch (error) {
